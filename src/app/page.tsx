@@ -60,7 +60,7 @@ export default function Home() {
         setCurrentIndex(0);
         setGuessAttempt(0);
         setLoading(false);
-      } catch (e: any) {
+      } catch (e: unknown) {
         setError(e.message || "Greška.");
         setLoading(false);
       }

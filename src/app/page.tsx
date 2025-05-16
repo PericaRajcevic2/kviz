@@ -47,26 +47,35 @@ export default function Home() {
 
   const playTimeout = useRef<NodeJS.Timeout | null>(null);
 
-  useEffect(() => {
-    async function loadTracks() {
-      try {
-        const res = await fetch("/api/spotify");
-        if (!res.ok) throw new Error("Greška pri dohvaćanju pjesama.");
-        const data: Track[] = await res.json();
-        if (!Array.isArray(data) || data.length === 0) {
-          throw new Error("Nema pjesama za reprodukciju.");
-        }
-        setTracks(data);
-        setCurrentIndex(0);
-        setGuessAttempt(0);
-        setLoading(false);
-      } catch (e: unknown) {
-        setError(e.message || "Greška.");
-        setLoading(false);
+  // ... ostatak koda ostaje isti ...
+
+useEffect(() => {
+  async function loadTracks() {
+    try {
+      const res = await fetch("/api/spotify");
+      if (!res.ok) throw new Error("Greška pri dohvaćanju pjesama.");
+      const data: Track[] = await res.json();
+      if (!Array.isArray(data) || data.length === 0) {
+        throw new Error("Nema pjesama za reprodukciju.");
       }
+      setTracks(data);
+      setCurrentIndex(0);
+      setGuessAttempt(0);
+      setLoading(false);
+    } catch (e: unknown) {
+      if (e instanceof Error) {
+        setError(e.message);
+      } else {
+        setError("Greška.");
+      }
+      setLoading(false);
     }
-    loadTracks();
-  }, []);
+  }
+  loadTracks();
+}, []);
+
+// ... ostatak koda ostaje isti ...
+
 
   useEffect(() => {
     setUserGuess("");

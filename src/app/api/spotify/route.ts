@@ -26,24 +26,40 @@ const balkanArtistsRaw = [
 // Dedupliciraj izvođače
 const uniqueArtists = [...new Set(balkanArtistsRaw.map((a) => a.trim()))];
 
-// Ako želiš ograničiti broj izvođača (npr. prvih 30):
+// Ograniči broj izvođača (npr. prvih 30)
 const selectedArtists = uniqueArtists.slice(0, 30);
 
-// Set za provjeru izvođača
+// Set za provjeru izvođača (lowercase)
 const allowedArtistsSet = new Set(selectedArtists.map((a) => a.toLowerCase()));
 
-// Funkcija za dohvat pjesama pojedinačno
-async function fetchTracksByArtist(artist: string) {
+interface DeezerTrack {
+  id: number;
+  title: string;
+  preview: string | null;
+  artist: {
+    name: string;
+  };
+  album: {
+    cover_medium: string;
+  };
+}
+
+// Dohvati pjesme pojedinačno po izvođaču
+async function fetchTracksByArtist(artist: string): Promise<DeezerTrack[]> {
   const url = `https://api.deezer.com/search?q=artist:"${encodeURIComponent(artist)}"&limit=10`;
   const res = await fetch(url);
   if (!res.ok) throw new Error(`Deezer API error for artist "${artist}"`);
   const json = await res.json();
-  return json.data;
+  return json.data as DeezerTrack[];
 }
 
-// Batch fetch s pauzama
-async function fetchInBatches(artists: string[], batchSize = 5, delay = 500) {
-  const results: any[] = [];
+// Dohvati pjesme u batchevima (grupama)
+async function fetchInBatches(
+  artists: string[],
+  batchSize = 5,
+  delay = 500
+): Promise<DeezerTrack[][]> {
+  const results: DeezerTrack[][] = [];
   for (let i = 0; i < artists.length; i += batchSize) {
     const batch = artists.slice(i, i + batchSize);
     const batchResults = await Promise.allSettled(batch.map(fetchTracksByArtist));
@@ -54,7 +70,7 @@ async function fetchInBatches(artists: string[], batchSize = 5, delay = 500) {
         console.error("Greška za izvođača:", result.reason);
       }
     }
-    await new Promise((r) => setTimeout(r, delay)); // Pauza između batcheva
+    await new Promise((r) => setTimeout(r, delay)); // pauza između batcheva
   }
   return results;
 }
@@ -79,15 +95,12 @@ export async function GET() {
       album_image: t.album.cover_medium,
     }));
 
+    // Promiješaj i uzmi 20 pjesama
     const shuffled = tracks.sort(() => 0.5 - Math.random()).slice(0, 20);
 
     return NextResponse.json(shuffled);
-  } catch (e: unknown) {
-    let message = "Nepoznata greška";
-    if (e instanceof Error) {
-      message = e.message;
-    }
-    console.error("Greška u Deezer API pozivu:", message);
+  } catch (e) {
+    console.error("Greška u Deezer API pozivu:", e);
     return NextResponse.json(
       { error: "Ne mogu dohvatiti pjesme s Deezer-a." },
       { status: 500 }

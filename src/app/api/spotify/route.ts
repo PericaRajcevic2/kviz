@@ -1,25 +1,5 @@
 import { NextResponse } from "next/server";
 
-interface DeezerArtist {
-  name: string;
-}
-
-interface DeezerAlbum {
-  cover_medium: string;
-}
-
-interface DeezerTrack {
-  title: string;
-  preview: string | null;
-  artist: DeezerArtist;
-  album: DeezerAlbum;
-}
-
-interface DeezerSearchResponse {
-  data: DeezerTrack[];
-  // možeš dodati ostale polja ako želiš
-}
-
 // Originalna lista izvođača (može imati duplikate)
 const balkanArtistsRaw = [
   "Seka Aleksić", "Šaban Šaulić", "Severina", "Željko Joksimović", "Ceca", "Bajaga", "Dino Merlin",
@@ -53,21 +33,17 @@ const selectedArtists = uniqueArtists.slice(0, 30);
 const allowedArtistsSet = new Set(selectedArtists.map((a) => a.toLowerCase()));
 
 // Funkcija za dohvat pjesama pojedinačno
-async function fetchTracksByArtist(artist: string): Promise<DeezerTrack[]> {
+async function fetchTracksByArtist(artist: string) {
   const url = `https://api.deezer.com/search?q=artist:"${encodeURIComponent(artist)}"&limit=10`;
   const res = await fetch(url);
   if (!res.ok) throw new Error(`Deezer API error for artist "${artist}"`);
-  const json: DeezerSearchResponse = await res.json();
+  const json = await res.json();
   return json.data;
 }
 
 // Batch fetch s pauzama
-async function fetchInBatches(
-  artists: string[],
-  batchSize = 5,
-  delay = 500
-): Promise<DeezerTrack[][]> {
-  const results: DeezerTrack[][] = [];
+async function fetchInBatches(artists: string[], batchSize = 5, delay = 500) {
+  const results: any[] = [];
   for (let i = 0; i < artists.length; i += batchSize) {
     const batch = artists.slice(i, i + batchSize);
     const batchResults = await Promise.allSettled(batch.map(fetchTracksByArtist));
@@ -106,8 +82,12 @@ export async function GET() {
     const shuffled = tracks.sort(() => 0.5 - Math.random()).slice(0, 20);
 
     return NextResponse.json(shuffled);
-  } catch (e: any) {
-    console.error("Greška u Deezer API pozivu:", e.message || e);
+  } catch (e: unknown) {
+    let message = "Nepoznata greška";
+    if (e instanceof Error) {
+      message = e.message;
+    }
+    console.error("Greška u Deezer API pozivu:", message);
     return NextResponse.json(
       { error: "Ne mogu dohvatiti pjesme s Deezer-a." },
       { status: 500 }

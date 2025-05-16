@@ -44,7 +44,6 @@ interface DeezerTrack {
   };
 }
 
-// Dohvati pjesme pojedinačno po izvođaču
 async function fetchTracksByArtist(artist: string): Promise<DeezerTrack[]> {
   const url = `https://api.deezer.com/search?q=artist:"${encodeURIComponent(artist)}"&limit=10`;
   const res = await fetch(url);
@@ -53,7 +52,6 @@ async function fetchTracksByArtist(artist: string): Promise<DeezerTrack[]> {
   return json.data as DeezerTrack[];
 }
 
-// Dohvati pjesme u batchevima (grupama)
 async function fetchInBatches(
   artists: string[],
   batchSize = 5,
@@ -70,12 +68,11 @@ async function fetchInBatches(
         console.error("Greška za izvođača:", result.reason);
       }
     }
-    await new Promise((r) => setTimeout(r, delay)); // pauza između batcheva
+    await new Promise((r) => setTimeout(r, delay));
   }
   return results;
 }
 
-// GET endpoint
 export async function GET() {
   try {
     const results = await fetchInBatches(selectedArtists);
@@ -88,17 +85,28 @@ export async function GET() {
           allowedArtistsSet.has(t.artist.name.toLowerCase())
       );
 
-    const tracks = allTracks.map((t) => ({
+    // Dedupliciraj pjesme po nazivu + izvođaču
+    const uniqueTrackMap = new Map<string, DeezerTrack>();
+    for (const t of allTracks) {
+      const key = `${t.title.toLowerCase()}___${t.artist.name.toLowerCase()}`;
+      if (!uniqueTrackMap.has(key)) {
+        uniqueTrackMap.set(key, t);
+      }
+    }
+
+    const deduplicatedTracks = Array.from(uniqueTrackMap.values());
+
+    // Promiješaj i uzmi 20 pjesama
+    const shuffled = deduplicatedTracks.sort(() => 0.5 - Math.random()).slice(0, 20);
+
+    const responseTracks = shuffled.map((t) => ({
       name: t.title,
       artist: t.artist.name,
       preview_url: t.preview,
       album_image: t.album.cover_medium,
     }));
 
-    // Promiješaj i uzmi 20 pjesama
-    const shuffled = tracks.sort(() => 0.5 - Math.random()).slice(0, 20);
-
-    return NextResponse.json(shuffled);
+    return NextResponse.json(responseTracks);
   } catch (e) {
     console.error("Greška u Deezer API pozivu:", e);
     return NextResponse.json(
@@ -107,3 +115,4 @@ export async function GET() {
     );
   }
 }
+

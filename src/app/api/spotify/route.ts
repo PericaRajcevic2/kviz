@@ -1,5 +1,25 @@
 import { NextResponse } from "next/server";
 
+interface DeezerArtist {
+  name: string;
+}
+
+interface DeezerAlbum {
+  cover_medium: string;
+}
+
+interface DeezerTrack {
+  title: string;
+  preview: string | null;
+  artist: DeezerArtist;
+  album: DeezerAlbum;
+}
+
+interface DeezerSearchResponse {
+  data: DeezerTrack[];
+  // možeš dodati ostale polja ako želiš
+}
+
 // Originalna lista izvođača (može imati duplikate)
 const balkanArtistsRaw = [
   "Seka Aleksić", "Šaban Šaulić", "Severina", "Željko Joksimović", "Ceca", "Bajaga", "Dino Merlin",
@@ -33,17 +53,21 @@ const selectedArtists = uniqueArtists.slice(0, 30);
 const allowedArtistsSet = new Set(selectedArtists.map((a) => a.toLowerCase()));
 
 // Funkcija za dohvat pjesama pojedinačno
-async function fetchTracksByArtist(artist: string) {
+async function fetchTracksByArtist(artist: string): Promise<DeezerTrack[]> {
   const url = `https://api.deezer.com/search?q=artist:"${encodeURIComponent(artist)}"&limit=10`;
   const res = await fetch(url);
   if (!res.ok) throw new Error(`Deezer API error for artist "${artist}"`);
-  const json = await res.json();
+  const json: DeezerSearchResponse = await res.json();
   return json.data;
 }
 
 // Batch fetch s pauzama
-async function fetchInBatches(artists: string[], batchSize = 5, delay = 500) {
-  const results: any[] = [];
+async function fetchInBatches(
+  artists: string[],
+  batchSize = 5,
+  delay = 500
+): Promise<DeezerTrack[][]> {
+  const results: DeezerTrack[][] = [];
   for (let i = 0; i < artists.length; i += batchSize) {
     const batch = artists.slice(i, i + batchSize);
     const batchResults = await Promise.allSettled(batch.map(fetchTracksByArtist));

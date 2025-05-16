@@ -46,41 +46,44 @@ export default function Home() {
   const [guessAttempt, setGuessAttempt] = useState(0);
 
   const playTimeout = useRef<NodeJS.Timeout | null>(null);
+  const intervalTimer = useRef<NodeJS.Timeout | null>(null);
 
-  // ... ostatak koda ostaje isti ...
+  const [shake, setShake] = useState(false);
 
-useEffect(() => {
-  async function loadTracks() {
-    try {
-      const res = await fetch("/api/spotify");
-      if (!res.ok) throw new Error("Greška pri dohvaćanju pjesama.");
-      const data: Track[] = await res.json();
-      if (!Array.isArray(data) || data.length === 0) {
-        throw new Error("Nema pjesama za reprodukciju.");
+  // novo: koliko je vremena prošlo u ms tijekom trenutnog pokušaja
+  const [elapsedTime, setElapsedTime] = useState(0);
+
+  useEffect(() => {
+    async function loadTracks() {
+      try {
+        const res = await fetch("/api/spotify");
+        if (!res.ok) throw new Error("Greška pri dohvaćanju pjesama.");
+        const data: Track[] = await res.json();
+        if (!Array.isArray(data) || data.length === 0) {
+          throw new Error("Nema pjesama za reprodukciju.");
+        }
+        setTracks(data);
+        setCurrentIndex(0);
+        setGuessAttempt(0);
+        setLoading(false);
+      } catch (e: unknown) {
+        if (e instanceof Error) {
+          setError(e.message);
+        } else {
+          setError("Greška.");
+        }
+        setLoading(false);
       }
-      setTracks(data);
-      setCurrentIndex(0);
-      setGuessAttempt(0);
-      setLoading(false);
-    } catch (e: unknown) {
-      if (e instanceof Error) {
-        setError(e.message);
-      } else {
-        setError("Greška.");
-      }
-      setLoading(false);
     }
-  }
-  loadTracks();
-}, []);
+    loadTracks();
+  }, []);
 
-// ... ostatak koda ostaje isti ...
-
-
+  // svaki put kad se mijenja pjesma ili pokušaj, resetiraj
   useEffect(() => {
     setUserGuess("");
     setIsCorrect(false);
     setIsPlaying(false);
+    setElapsedTime(0);
 
     if (audioRef.current) {
       audioRef.current.pause();
@@ -90,6 +93,11 @@ useEffect(() => {
 
     if (playTimeout.current) {
       clearTimeout(playTimeout.current);
+      playTimeout.current = null;
+    }
+    if (intervalTimer.current) {
+      clearInterval(intervalTimer.current);
+      intervalTimer.current = null;
     }
 
     if (audioRef.current && tracks.length > 0) {
@@ -97,17 +105,50 @@ useEffect(() => {
         .play()
         .then(() => {
           setIsPlaying(true);
+
+          // timeout za zaustavljanje reprodukcije nakon trajanja pokušaja
           playTimeout.current = setTimeout(() => {
             if (audioRef.current) {
               audioRef.current.pause();
               setIsPlaying(false);
             }
+            if (intervalTimer.current) {
+              clearInterval(intervalTimer.current);
+              intervalTimer.current = null;
+            }
           }, ATTEMPT_DURATIONS[guessAttempt]);
+
+          // interval za update elapsedTime svake 100ms
+          intervalTimer.current = setInterval(() => {
+            setElapsedTime((prev) => {
+              const next = prev + 100;
+              if (next >= ATTEMPT_DURATIONS[guessAttempt]) {
+                if (intervalTimer.current) {
+                  clearInterval(intervalTimer.current);
+                  intervalTimer.current = null;
+                }
+                return ATTEMPT_DURATIONS[guessAttempt];
+              }
+              return next;
+            });
+          }, 100);
         })
         .catch(() => {
+          // ignoriramo poruke o reprodukciji
           setIsPlaying(false);
         });
     }
+
+    return () => {
+      if (playTimeout.current) {
+        clearTimeout(playTimeout.current);
+        playTimeout.current = null;
+      }
+      if (intervalTimer.current) {
+        clearInterval(intervalTimer.current);
+        intervalTimer.current = null;
+      }
+    };
   }, [currentIndex, guessAttempt, tracks]);
 
   const togglePlay = () => {
@@ -117,6 +158,10 @@ useEffect(() => {
       audioRef.current.pause();
       setIsPlaying(false);
       if (playTimeout.current) clearTimeout(playTimeout.current);
+      if (intervalTimer.current) {
+        clearInterval(intervalTimer.current);
+        intervalTimer.current = null;
+      }
     } else {
       audioRef.current.currentTime = 0;
       audioRef.current
@@ -128,10 +173,27 @@ useEffect(() => {
               audioRef.current.pause();
               setIsPlaying(false);
             }
+            if (intervalTimer.current) {
+              clearInterval(intervalTimer.current);
+              intervalTimer.current = null;
+            }
           }, ATTEMPT_DURATIONS[guessAttempt]);
+          intervalTimer.current = setInterval(() => {
+            setElapsedTime((prev) => {
+              const next = prev + 100;
+              if (next >= ATTEMPT_DURATIONS[guessAttempt]) {
+                if (intervalTimer.current) {
+                  clearInterval(intervalTimer.current);
+                  intervalTimer.current = null;
+                }
+                return ATTEMPT_DURATIONS[guessAttempt];
+              }
+              return next;
+            });
+          }, 100);
         })
         .catch(() => {
-          alert("Klikni bilo gdje na stranicu da dozvoliš reprodukciju zvuka.");
+          setIsPlaying(false);
         });
     }
   };
@@ -145,7 +207,7 @@ useEffect(() => {
 
     const parts = userGuess.split(" - ").map((p) => p.trim());
     if (parts.length !== 2) {
-      alert("Unos mora biti u formatu: Izvođač - Naziv pjesme");
+      shakeInput();
       return;
     }
     const [guessArtist, guessName] = parts;
@@ -160,9 +222,15 @@ useEffect(() => {
         setIsPlaying(false);
       }
       if (playTimeout.current) clearTimeout(playTimeout.current);
+      if (intervalTimer.current) clearInterval(intervalTimer.current);
     } else {
-      alert("Netočno! Pokušaj ponovo.");
+      shakeInput();
     }
+  };
+
+  const shakeInput = () => {
+    setShake(true);
+    setTimeout(() => setShake(false), 500);
   };
 
   const nextTrack = () => {
@@ -189,6 +257,7 @@ useEffect(() => {
         setIsPlaying(false);
       }
       if (playTimeout.current) clearTimeout(playTimeout.current);
+      if (intervalTimer.current) clearInterval(intervalTimer.current);
     }
   };
 
@@ -217,6 +286,12 @@ useEffect(() => {
     suggestions = Array.from(new Set(suggestions));
   }
 
+  // postotak za punjenje trake (0 do 100%)
+  const progressPercent =
+    elapsedTime && ATTEMPT_DURATIONS[guessAttempt]
+      ? Math.min((elapsedTime / ATTEMPT_DURATIONS[guessAttempt]) * 100, 100)
+      : 0;
+
   return (
     <>
       <div className="container">
@@ -227,10 +302,38 @@ useEffect(() => {
           Tvoj browser ne podržava audio element.
         </audio>
 
-        <p className="attempt-info">
-          Pokušaj #{guessAttempt + 1} - slušaj prvih{" "}
+        <div className="attempt-header">
+          <span className="search-icon" role="img" aria-label="search">
+            🔍
+          </span>{" "}
+          Pokušaj #{guessAttempt + 1} — Trajanje:{" "}
           {(ATTEMPT_DURATIONS[guessAttempt] / 1000).toFixed(1)} sekundi
-        </p>
+        </div>
+
+        <div className="progress-bar-wrapper">
+          <div className="progress-bar-labels">
+            <span>0s</span>
+            <span>30s</span>
+          </div>
+          <div className="progress-bar">
+            <div
+              className="progress-bar-fill"
+              style={{ width: `${progressPercent}%` }}
+            ></div>
+
+            {ATTEMPT_DURATIONS.map((_, i) => {
+              let className = "";
+              if (i < guessAttempt) className = "skipped";
+              else if (i === guessAttempt) className = "active";
+
+              return (
+                <div key={i} className={`progress-segment ${className}`}>
+                  {i + 1}
+                </div>
+              );
+            })}
+          </div>
+        </div>
 
         {!isCorrect ? (
           <>
@@ -248,7 +351,7 @@ useEffect(() => {
               value={userGuess}
               onChange={(e) => setUserGuess(e.target.value)}
               autoComplete="off"
-              className="guess-input"
+              className={`guess-input${shake ? " shake" : ""}`}
             />
             <datalist id="guessSuggestions">
               {suggestions.map((s, i) => (
@@ -288,7 +391,7 @@ useEffect(() => {
           max-width: 400px;
           margin: 40px auto;
           padding: 30px;
-          background: linear-gradient(135deg, #1db954, #1ed760);
+          background: linear-gradient(135deg,rgb(0, 119, 255),rgb(89, 87, 236));
           border-radius: 15px;
           color: white;
           font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
@@ -339,17 +442,108 @@ useEffect(() => {
           font-size: 16px;
           outline: none;
           box-sizing: border-box;
+          transition: transform 0.2s ease;
         }
-        img.album-cover {
+        input.guess-input.shake {
+          animation: shake 0.4s;
+          border: 2px solid #ff3b3b;
+          background-color: #660000;
+          color: white;
+        }
+        @keyframes shake {
+          0%,
+          100% {
+            transform: translateX(0);
+          }
+          25%,
+          75% {
+            transform: translateX(-6px);
+          }
+          50% {
+            transform: translateX(6px);
+          }
+        }
+        .album-cover {
           border-radius: 12px;
-          margin-bottom: 10px;
-          max-width: 100%;
-          height: auto;
+          margin: 12px 0;
+          box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
         }
-        p.attempt-info {
-          margin-bottom: 15px;
+        .attempt-header {
+          margin-bottom: 8px;
+          font-size: 14px;
           font-weight: 600;
-          text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          gap: 6px;
+          text-shadow: 0 0 3px black;
+        }
+        .search-icon {
+          font-size: 18px;
+        }
+
+        .progress-bar-wrapper {
+          margin-bottom: 16px;
+        }
+        .progress-bar-labels {
+          display: flex;
+          justify-content: space-between;
+          font-size: 11px;
+          margin-bottom: 4px;
+          font-weight: 600;
+          text-shadow: 0 0 3px black;
+        }
+        .progress-bar {
+          position: relative;
+          height: 20px;
+          background: rgba(0, 0, 0, 0.25);
+          border-radius: 12px;
+          overflow: hidden;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 0 6px;
+          font-weight: 600;
+          font-size: 12px;
+          color: white;
+          user-select: none;
+          box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.4);
+        }
+        .progress-bar-fill {
+          position: absolute;
+          top: 0;
+          left: 0;
+          height: 100%;
+          background:rgb(252, 252, 255);
+          border-radius: 12px 0 0 12px;
+          transition: width 0.1s linear;
+          z-index: 0;
+          pointer-events: none;
+        }
+        .progress-segment {
+          position: relative;
+          z-index: 1;
+          width: 16px;
+          height: 16px;
+          line-height: 16px;
+          text-align: center;
+          border-radius: 50%;
+          background: rgba(255, 255, 255, 0.3);
+          color: #111;
+          font-weight: 700;
+          box-shadow: 0 0 3px black;
+          user-select: none;
+          font-size: 12px;
+        }
+        .progress-segment.skipped {
+          background:rgb(255, 0, 0);
+          color: white;
+          box-shadow: 0 0 6pxrgb(105, 15, 8);
+        }
+        .progress-segment.active {
+          background: #1db954;
+          color: white;
+          box-shadow: 0 0 8px #1db954;
         }
       `}</style>
     </>

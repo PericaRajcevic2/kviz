@@ -44,6 +44,7 @@ export default function Home() {
   const [userGuess, setUserGuess] = useState("");
   const [isCorrect, setIsCorrect] = useState(false);
   const [guessAttempt, setGuessAttempt] = useState(0);
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
   const playTimeout = useRef<NodeJS.Timeout | null>(null);
   const intervalTimer = useRef<NodeJS.Timeout | null>(null);
@@ -345,14 +346,43 @@ export default function Home() {
               Pogodi izvođača i naziv pjesme (format: Izvođač - Naziv):
             </label>
             <input
-              id="guessInput"
+             id="guessInput"
               type="text"
-              list="guessSuggestions"
               value={userGuess}
-              onChange={(e) => setUserGuess(e.target.value)}
-              autoComplete="off"
-              className={`guess-input${shake ? " shake" : ""}`}
-            />
+              onChange={(e) => {
+                setUserGuess(e.target.value);
+                 setShowSuggestions(true);
+             }}
+             autoComplete="off"
+             className={`guess-input${shake ? " shake" : ""}`}
+              />
+
+            {showSuggestions && suggestions.length > 0 && (
+             <ul className="suggestions-list" role="listbox">
+            {suggestions.map((s, i) => (
+             <li
+        key={i}
+        className="suggestion-item"
+        role="option"
+        tabIndex={0}
+        onClick={() => {
+          setUserGuess(s);
+          setShowSuggestions(false);
+        }}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            setUserGuess(s);
+            setShowSuggestions(false);
+          }
+        }}
+      >
+        {s}
+      </li>
+    ))}
+  </ul>
+)}
+
+
             <datalist id="guessSuggestions">
               {suggestions.map((s, i) => (
                 <option key={i} value={s} />
@@ -545,6 +575,34 @@ export default function Home() {
           color: white;
           box-shadow: 0 0 8px #1db954;
         }
+        .suggestions-list {
+  margin: 0;
+  padding: 6px 0;
+  list-style: none;
+  background: white;
+  color: black;
+  border-radius: 6px;
+  max-height: 160px;
+  overflow-y: auto;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  text-align: left;
+  font-size: 14px;
+  user-select: none;
+}
+
+.suggestion-item {
+  padding: 6px 12px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.suggestion-item:hover,
+.suggestion-item:focus {
+  background-color: #1db954;
+  color: white;
+  outline: none;
+}
+
       `}</style>
     </>
   );

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
+import { ClipLoader } from "react-spinners";
 
 type Track = {
   name: string;
@@ -9,7 +10,19 @@ type Track = {
   album_image: string;
 };
 
-const ATTEMPT_DURATIONS = [1000, 3000, 5000, 10000, 15000, 30000]; // ms
+const ATTEMPT_DURATIONS = [100, 3000, 5000, 10000, 15000, 30000]; // ms
+
+const normalizeText = (text: string) => {
+  return text
+    .toLowerCase()
+    .replace(/[čć]/g, 'c')
+    .replace(/[đ]/g, 'd')
+    .replace(/[š]/g, 's')
+    .replace(/[ž]/g, 'z')
+    .replace(/dž/g, 'dz')
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+};
 
 function randomSample<T>(arr: T[], n: number): T[] {
   const result: T[] = [];
@@ -48,11 +61,19 @@ export default function Home() {
 
   const playTimeout = useRef<NodeJS.Timeout | null>(null);
   const intervalTimer = useRef<NodeJS.Timeout | null>(null);
+  const usedTracksRef = useRef<Set<string>>(new Set());
+  const maxMemorySize = 20;
 
   const [shake, setShake] = useState(false);
-
-  // novo: koliko je vremena prošlo u ms tijekom trenutnog pokušaja
   const [elapsedTime, setElapsedTime] = useState(0);
+  const [windowWidth, setWindowWidth] = useState(0);
+
+  useEffect(() => {
+    setWindowWidth(window.innerWidth);
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => {
     async function loadTracks() {
@@ -79,7 +100,6 @@ export default function Home() {
     loadTracks();
   }, []);
 
-  // svaki put kad se mijenja pjesma ili pokušaj, resetiraj
   useEffect(() => {
     setUserGuess("");
     setIsCorrect(false);
@@ -107,7 +127,6 @@ export default function Home() {
         .then(() => {
           setIsPlaying(true);
 
-          // timeout za zaustavljanje reprodukcije nakon trajanja pokušaja
           playTimeout.current = setTimeout(() => {
             if (audioRef.current) {
               audioRef.current.pause();
@@ -119,7 +138,6 @@ export default function Home() {
             }
           }, ATTEMPT_DURATIONS[guessAttempt]);
 
-          // interval za update elapsedTime svake 100ms
           intervalTimer.current = setInterval(() => {
             setElapsedTime((prev) => {
               const next = prev + 100;
@@ -135,7 +153,6 @@ export default function Home() {
           }, 100);
         })
         .catch(() => {
-          // ignoriramo poruke o reprodukciji
           setIsPlaying(false);
         });
     }
@@ -206,16 +223,36 @@ export default function Home() {
       return;
     }
 
-    const parts = userGuess.split(" - ").map((p) => p.trim());
-    if (parts.length !== 2) {
-      shakeInput();
-      return;
-    }
-    const [guessArtist, guessName] = parts;
+    const normalizedGuess = normalizeText(userGuess);
+    const normalizedTrackName = normalizeText(currentTrack.name);
+    const normalizedArtist = normalizeText(currentTrack.artist);
 
+    const parts1 = normalizedGuess.split(" - ").map((p) => p.trim());
+    const parts2 = normalizedGuess.split("-").map((p) => p.trim());
+    
+    if (parts1.length === 2 || parts2.length === 2) {
+      const [part1, part2] = parts1.length === 2 ? parts1 : parts2;
+      
+      if (
+        (part1 === normalizedArtist && part2 === normalizedTrackName) ||
+        (part1 === normalizedTrackName && part2 === normalizedArtist)
+      ) {
+        setIsCorrect(true);
+        if (audioRef.current) {
+          audioRef.current.pause();
+          setIsPlaying(false);
+        }
+        if (playTimeout.current) clearTimeout(playTimeout.current);
+        if (intervalTimer.current) clearInterval(intervalTimer.current);
+        return;
+      }
+    }
+    
     if (
-      guessName.toLowerCase() === currentTrack.name.toLowerCase() &&
-      guessArtist.toLowerCase() === currentTrack.artist.toLowerCase()
+      normalizedGuess === normalizedTrackName ||
+      normalizedGuess === normalizedArtist ||
+      normalizedGuess === `${normalizedArtist} ${normalizedTrackName}` ||
+      normalizedGuess === `${normalizedTrackName} ${normalizedArtist}`
     ) {
       setIsCorrect(true);
       if (audioRef.current) {
@@ -224,9 +261,10 @@ export default function Home() {
       }
       if (playTimeout.current) clearTimeout(playTimeout.current);
       if (intervalTimer.current) clearInterval(intervalTimer.current);
-    } else {
-      shakeInput();
+      return;
     }
+
+    shakeInput();
   };
 
   const shakeInput = () => {
@@ -237,11 +275,29 @@ export default function Home() {
   const nextTrack = () => {
     if (tracks.length <= 1) return;
 
-    const filteredTracks = tracks.filter((_, idx) => idx !== currentIndex);
-    const randomIdx = Math.floor(Math.random() * filteredTracks.length);
-    const newTrack = filteredTracks[randomIdx];
+    const usedKeys = usedTracksRef.current;
+    const currentKey = `${tracks[currentIndex].artist} - ${tracks[currentIndex].name}`;
+
+    usedKeys.add(currentKey);
+    if (usedKeys.size > maxMemorySize) {
+      const first = usedKeys.values().next().value;
+      usedKeys.delete(first);
+    }
+
+    const unusedTracks = tracks.filter(
+      (t) => !usedKeys.has(`${t.artist} - ${t.name}`)
+    );
+
+    let nextTrack;
+    if (unusedTracks.length > 0) {
+      nextTrack = unusedTracks[Math.floor(Math.random() * unusedTracks.length)];
+    } else {
+      usedTracksRef.current = new Set();
+      nextTrack = tracks[Math.floor(Math.random() * tracks.length)];
+    }
+
     const newIndex = tracks.findIndex(
-      (t) => t.name === newTrack.name && t.artist === newTrack.artist
+      (t) => t.name === nextTrack.name && t.artist === nextTrack.artist
     );
 
     setCurrentIndex(newIndex);
@@ -262,36 +318,51 @@ export default function Home() {
     }
   };
 
-  if (loading) return <p>Učitavanje pjesama...</p>;
-  if (error) return <p>Greška: {error}</p>;
-  if (tracks.length === 0) return <p>Nema dostupnih pjesama.</p>;
+  if (loading)
+  return (
+    <div className="flex items-center justify-center h-screen">
+      <div className="flex flex-col items-center gap-4">
+        <ClipLoader size={60} color="#3B82F6" />
+        <p className="text-lg text-gray-700">Učitavanje pjesama...</p>
+      </div>
+    </div>
+  );
+
+if (error) return <p className="text-red-500">Greška: {error}</p>;
+if (tracks.length === 0) return <p className="text-gray-600">Nema dostupnih pjesama.</p>;
 
   const currentTrack = tracks[currentIndex];
 
   let suggestions: string[] = [];
   if (userGuess.length >= 1) {
-    const guessLower = userGuess.toLowerCase();
+    const guessLower = normalizeText(userGuess);
 
     const filtered = tracks
       .map((t) => `${t.artist} - ${t.name}`)
-      .filter((full) => full.toLowerCase().includes(guessLower));
+      .filter((full) => normalizeText(full).includes(guessLower));
 
     const randomSuggestions = randomSample(filtered, 5);
     suggestions = randomSuggestions;
 
     const currentFull = `${currentTrack.artist} - ${currentTrack.name}`;
-    const similarity = startsWithSimilarity(currentFull.toLowerCase(), guessLower);
+    const similarity = startsWithSimilarity(normalizeText(currentFull), guessLower);
     if (similarity >= 0.4 && !suggestions.includes(currentFull)) {
       suggestions.push(currentFull);
     }
     suggestions = Array.from(new Set(suggestions));
   }
 
-  // postotak za punjenje trake (0 do 100%)
   const progressPercent =
     elapsedTime && ATTEMPT_DURATIONS[guessAttempt]
       ? Math.min((elapsedTime / ATTEMPT_DURATIONS[guessAttempt]) * 100, 100)
       : 0;
+
+  const formatTime = (ms: number) => {
+    const seconds = Math.floor(ms / 1000);
+    return `${seconds}`;
+  };
+
+  const isMobile = windowWidth < 768;
 
   return (
     <>
@@ -303,32 +374,28 @@ export default function Home() {
           Tvoj browser ne podržava audio element.
         </audio>
 
-        <div className="attempt-header">
-          <span className="search-icon" role="img" aria-label="search">
-            🔍
-          </span>{" "}
-          Pokušaj #{guessAttempt + 1} — Trajanje:{" "}
-          {(ATTEMPT_DURATIONS[guessAttempt] / 1000).toFixed(1)} sekundi
+        <div className="stage-info">
+          <div className="stage-title">Pokušaj {guessAttempt + 1}</div>
+          <div className="stage-time">{formatTime(elapsedTime)} sekundi</div>
         </div>
 
-        <div className="progress-bar-wrapper">
-          <div className="progress-bar-labels">
-            <span>0s</span>
-            <span>30s</span>
+        <div className="progress-container">
+          <div className="progress-labels">
+            <span>0:00</span>
+            <span>0:30</span>
           </div>
-          <div className="progress-bar">
+          <div className="progress-track">
             <div
-              className="progress-bar-fill"
+              className="progress-bar"
               style={{ width: `${progressPercent}%` }}
             ></div>
-
             {ATTEMPT_DURATIONS.map((_, i) => {
-              let className = "";
-              if (i < guessAttempt) className = "skipped";
-              else if (i === guessAttempt) className = "active";
+              let status = "";
+              if (i < guessAttempt) status = "skipped";
+              else if (i === guessAttempt) status = "active";
 
               return (
-                <div key={i} className={`progress-segment ${className}`}>
+                <div key={i} className={`progress-marker ${status}`}>
                   {i + 1}
                 </div>
               );
@@ -338,271 +405,379 @@ export default function Home() {
 
         {!isCorrect ? (
           <>
-            <button onClick={togglePlay} className="playpause">
-              {isPlaying ? "Pauziraj" : "Reproduciraj"}
-            </button>
-
-            <label htmlFor="guessInput">
-              Pogodi izvođača i naziv pjesme (format: Izvođač - Naziv):
-            </label>
-            <input
-             id="guessInput"
-              type="text"
-              value={userGuess}
-              onChange={(e) => {
-                setUserGuess(e.target.value);
-                 setShowSuggestions(true);
-             }}
-             autoComplete="off"
-             className={`guess-input${shake ? " shake" : ""}`}
+            <div className="search-container">
+              <div className="search-icon">🔍</div>
+              <input
+                type="text"
+                value={userGuess}
+                onChange={(e) => {
+                  setUserGuess(e.target.value);
+                  setShowSuggestions(true);
+                }}
+                placeholder="Znaš pjesmu? Upisi naziv izvođača i pjesme"
+                className={`search-input ${shake ? "shake" : ""}`}
+                autoComplete="off"
               />
+              {showSuggestions && suggestions.length > 0 && (
+                <ul className="suggestions-list">
+                  {suggestions.map((s, i) => (
+                    <li
+                      key={i}
+                      className="suggestion-item"
+                      onClick={() => {
+                        setUserGuess(s);
+                        setShowSuggestions(false);
+                      }}
+                    >
+                      {s}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
 
-            {showSuggestions && suggestions.length > 0 && (
-             <ul className="suggestions-list" role="listbox">
-            {suggestions.map((s, i) => (
-             <li
-        key={i}
-        className="suggestion-item"
-        role="option"
-        tabIndex={0}
-        onClick={() => {
-          setUserGuess(s);
-          setShowSuggestions(false);
-        }}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === " ") {
-            setUserGuess(s);
-            setShowSuggestions(false);
-          }
-        }}
-      >
-        {s}
-      </li>
-    ))}
-  </ul>
-)}
+            <div className="button-group">
+              <button onClick={nextAttempt} className="skip-button">
+                PRESKOČI
+              </button>
+              <button onClick={checkGuess} className="submit-button">
+                POTVRDI
+              </button>
+            </div>
 
-
-            <datalist id="guessSuggestions">
-              {suggestions.map((s, i) => (
-                <option key={i} value={s} />
-              ))}
-            </datalist>
-
-            <button onClick={checkGuess} className="check">
-              Provjeri
-            </button>
-
-            <button onClick={nextAttempt} className="skip">
-              Preskoči na duži isječak
+            <button onClick={togglePlay} className="play-button">
+              {isPlaying ? "Pauziraj" : "Pokreni"}
             </button>
           </>
         ) : (
           <>
-            <img
-              src={currentTrack.album_image}
-              alt={currentTrack.name}
-              className="album-cover"
-              width={200}
-              height={200}
-            />
-            <h2>{currentTrack.name}</h2>
-            <p>Izvođač: {currentTrack.artist}</p>
+            <div className="correct-answer">
+              <img
+                src={currentTrack.album_image}
+                alt={currentTrack.name}
+                className="album-cover"
+                width={200}
+                height={200}
+              />
+              <h2>{currentTrack.name}</h2>
+              <p>Izvođač: {currentTrack.artist}</p>
+            </div>
 
-            <button onClick={nextTrack} className="skip">
+            <button onClick={nextTrack} className="next-button">
               Sljedeća pjesma
             </button>
           </>
         )}
       </div>
 
+      <main className="flex flex-col min-h-screen items-center justify-between p-8">
+      {/* Glavni sadržaj */}
+      <div className="flex-1 w-full max-w-2xl">
+       
+      </div>
+
+      {/* Footer */}
+      <footer className="w-full text-center text-sm text-gray-500 py-4 mt-8">
+        © {new Date().getFullYear()} Perica Rajčević. Sva prava pridržana.
+      </footer>
+    </main>
+  
+
+
       <style jsx>{`
         .container {
           max-width: 400px;
           margin: 40px auto;
           padding: 30px;
-          background: linear-gradient(135deg,rgb(0, 119, 255),rgb(89, 87, 236));
+          background: linear-gradient(135deg, #2c3e50, #4ca1af);
           border-radius: 15px;
           color: white;
           font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
           box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
           text-align: center;
         }
+
         h1 {
-          margin-bottom: 20px;
+          margin-bottom: 30px;
           font-weight: 700;
-        }
-        button {
-          width: 100%;
-          padding: 14px;
-          margin-bottom: 12px;
-          border: none;
-          border-radius: 8px;
-          font-weight: 600;
-          cursor: pointer;
-          transition: background-color 0.3s ease;
-        }
-        button.playpause {
-          background-color: white;
-          color: #1db954;
-        }
-        button.playpause:hover {
-          background-color: #ccecd7;
-        }
-        button.check {
-          background-color: #1db954;
-          color: white;
-        }
-        button.check:hover {
-          background-color: #17a04f;
-        }
-        button.skip {
-          background-color: #eee;
-          color: #333;
-        }
-        button.skip:hover {
-          background-color: #ddd;
-        }
-        input.guess-input {
-          width: 100%;
-          padding: 12px;
-          margin-bottom: 12px;
-          border-radius: 8px;
-          border: none;
-          font-size: 16px;
-          outline: none;
-          box-sizing: border-box;
-          transition: transform 0.2s ease;
-        }
-        input.guess-input.shake {
-          animation: shake 0.4s;
-          border: 2px solid #ff3b3b;
-          background-color: #660000;
-          color: white;
-        }
-        @keyframes shake {
-          0%,
-          100% {
-            transform: translateX(0);
-          }
-          25%,
-          75% {
-            transform: translateX(-6px);
-          }
-          50% {
-            transform: translateX(6px);
-          }
-        }
-        .album-cover {
-          border-radius: 12px;
-          margin: 12px 0;
-          box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
-        }
-        .attempt-header {
-          margin-bottom: 8px;
-          font-size: 14px;
-          font-weight: 600;
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          gap: 6px;
-          text-shadow: 0 0 3px black;
-        }
-        .search-icon {
-          font-size: 18px;
+          font-size: 24px;
         }
 
-        .progress-bar-wrapper {
-          margin-bottom: 16px;
+        .stage-info {
+          margin-bottom: 15px;
         }
-        .progress-bar-labels {
+
+        .stage-title {
+          font-size: 18px;
+          font-weight: 600;
+          margin-bottom: 5px;
+        }
+
+        .stage-time {
+          font-size: 14px;
+          opacity: 0.8;
+        }
+
+        .progress-container {
+          margin-bottom: 25px;
+        }
+
+        .progress-labels {
           display: flex;
           justify-content: space-between;
-          font-size: 11px;
-          margin-bottom: 4px;
-          font-weight: 600;
-          text-shadow: 0 0 3px black;
+          font-size: 12px;
+          margin-bottom: 5px;
         }
-        .progress-bar {
+
+        .progress-track {
           position: relative;
           height: 20px;
-          background: rgba(0, 0, 0, 0.25);
-          border-radius: 12px;
+          background: rgba(255, 255, 255, 0.2);
+          border-radius: 10px;
           overflow: hidden;
           display: flex;
           align-items: center;
           justify-content: space-between;
-          padding: 0 6px;
-          font-weight: 600;
-          font-size: 12px;
-          color: white;
-          user-select: none;
-          box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.4);
+          padding: 0 10px;
         }
-        .progress-bar-fill {
+
+        .progress-bar {
           position: absolute;
           top: 0;
           left: 0;
           height: 100%;
-          background:rgb(252, 252, 255);
-          border-radius: 12px 0 0 12px;
+          background: rgba(255, 255, 255, 0.5);
           transition: width 0.1s linear;
-          z-index: 0;
-          pointer-events: none;
         }
-        .progress-segment {
+
+        .progress-marker {
           position: relative;
           z-index: 1;
           width: 16px;
           height: 16px;
-          line-height: 16px;
-          text-align: center;
           border-radius: 50%;
           background: rgba(255, 255, 255, 0.3);
-          color: #111;
-          font-weight: 700;
-          box-shadow: 0 0 3px black;
-          user-select: none;
-          font-size: 12px;
+          color: #333;
+          font-weight: 600;
+          font-size: 10px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
         }
-        .progress-segment.skipped {
-          background:rgb(255, 0, 0);
+
+        .progress-marker.skipped {
+          background: #ff4d4d;
           color: white;
-          box-shadow: 0 0 6pxrgb(105, 15, 8);
         }
-        .progress-segment.active {
-          background: #1db954;
+
+        .progress-marker.active {
+          background: #4caf50;
           color: white;
-          box-shadow: 0 0 8px #1db954;
         }
+
+        .search-container {
+          position: relative;
+          margin-bottom: 20px;
+        }
+
+        .search-icon {
+          position: absolute;
+          left: 10px;
+          top: 50%;
+          transform: translateY(-50%);
+          font-size: 18px;
+        }
+
+        .search-input {
+          width: 100%;
+          padding: 12px 12px 12px 35px;
+          border-radius: 8px;
+          border: none;
+          font-size: 14px;
+          outline: none;
+          box-sizing: border-box;
+        }
+
+        .search-input.shake {
+          animation: shake 0.4s;
+          border: 2px solid #ff3b3b;
+        }
+
+        @keyframes shake {
+          0%, 100% { transform: translateX(0); }
+          25%, 75% { transform: translateX(-6px); }
+          50% { transform: translateX(6px); }
+        }
+
         .suggestions-list {
-  margin: 0;
-  padding: 6px 0;
-  list-style: none;
-  background: white;
-  color: black;
-  border-radius: 6px;
-  max-height: 160px;
-  overflow-y: auto;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-  text-align: left;
-  font-size: 14px;
-  user-select: none;
-}
+          position: absolute;
+          width: 100%;
+          max-height: 200px;
+          overflow-y: auto;
+          background: white;
+          border-radius: 8px;
+          margin-top: 5px;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+          z-index: 10;
+          color: #333;
+          text-align: left;
+          padding: 0;
+          list-style: none;
+        }
 
-.suggestion-item {
-  padding: 6px 12px;
-  cursor: pointer;
-  border-radius: 4px;
-}
+        .suggestion-item {
+          padding: 8px 15px;
+          cursor: pointer;
+        }
 
-.suggestion-item:hover,
-.suggestion-item:focus {
-  background-color: #1db954;
-  color: white;
-  outline: none;
-}
+        .suggestion-item:hover {
+          background: #f0f0f0;
+        }
 
+        .button-group {
+          display: flex;
+          gap: 10px;
+          margin-bottom: 15px;
+        }
+
+        button {
+          padding: 12px;
+          border: none;
+          border-radius: 8px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+
+        .skip-button {
+          flex: 1;
+          background: #e0e0e0;
+          color: #333;
+        }
+
+        .skip-button:hover {
+          background: #d0d0d0;
+        }
+
+        .submit-button {
+          flex: 1;
+          background: #4caf50;
+          color: white;
+        }
+
+        .submit-button:hover {
+          background: #3e8e41;
+        }
+
+        .play-button {
+          width: 100%;
+          background: #2196f3;
+          color: white;
+          margin-bottom: 0;
+        }
+
+        .play-button:hover {
+          background: #0b7dda;
+        }
+
+        .album-cover {
+          border-radius: 8px;
+          margin-bottom: 15px;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .correct-answer h2 {
+          margin: 10px 0 5px;
+          font-size: 20px;
+        }
+
+        .correct-answer p {
+          margin: 0 0 20px;
+          opacity: 0.8;
+        }
+
+        .next-button {
+          width: 100%;
+          background: #ff9800;
+          color: white;
+        }
+
+        .next-button:hover {
+          background: #e68a00;
+        }
+
+        /* Mobilni stilovi */
+        @media (max-width: 768px) {
+          .container {
+            max-width: 95%;
+            margin: 20px auto;
+            padding: 20px;
+          }
+
+          h1 {
+            font-size: 22px;
+            margin-bottom: 20px;
+          }
+
+          .progress-track {
+            height: 18px;
+          }
+
+          .progress-marker {
+            width: 14px;
+            height: 14px;
+            font-size: 9px;
+          }
+
+          .search-input {
+            padding: 10px 10px 10px 35px;
+            font-size: 14px;
+          }
+
+          button {
+            padding: 10px;
+            font-size: 14px;
+          }
+
+          .album-cover {
+            width: 180px;
+            height: 180px;
+          }
+        }
+
+        @media (max-width: 480px) {
+          .container {
+            padding: 15px;
+          }
+
+          h1 {
+            font-size: 20px;
+          }
+
+          .progress-track {
+            height: 16px;
+            padding: 0 8px;
+          }
+
+          .progress-marker {
+            width: 12px;
+            height: 12px;
+            font-size: 8px;
+          }
+
+          .search-input {
+            font-size: 13px;
+          }
+
+          button {
+            padding: 8px;
+          }
+
+          .album-cover {
+            width: 160px;
+            height: 160px;
+          }
+        }
       `}</style>
     </>
   );

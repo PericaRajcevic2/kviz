@@ -362,7 +362,7 @@ if (tracks.length === 0) return <p className="text-gray-600">Nema dostupnih pjes
     return `${seconds}`;
   };
 
-  const isMobile = windowWidth < 768;
+  //const isMobile = windowWidth < 768;
 
   return (
     <>

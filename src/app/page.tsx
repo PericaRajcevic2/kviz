@@ -354,8 +354,8 @@ if (tracks.length === 0) return <p className="text-gray-600">Nema dostupnih pjes
       : 0;
 
   const formatTime = (ms: number) => {
-    const seconds = Math.floor(ms / 1000);
-    return `${seconds}`;
+    const seconds = ms / 1000;
+    return seconds < 1 ? seconds.toFixed(1) : Math.floor(seconds).toString();
   };
 
   return (

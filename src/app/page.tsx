@@ -11,7 +11,7 @@ type Track = {
   album_image: string;
 };
 
-const ATTEMPT_DURATIONS = [100, 3000, 5000, 10000, 15000, 30000]; // ms
+const ATTEMPT_DURATIONS = [1000, 3000, 5000, 10000, 15000, 30000]; // ms
 
 const normalizeText = (text: string) => {
   return text

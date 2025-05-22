@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import { ClipLoader } from "react-spinners";
+import Image from "next/image";
 
 type Track = {
   name: string;
@@ -66,14 +67,6 @@ export default function Home() {
 
   const [shake, setShake] = useState(false);
   const [elapsedTime, setElapsedTime] = useState(0);
-  const [windowWidth, setWindowWidth] = useState(0);
-
-  useEffect(() => {
-    setWindowWidth(window.innerWidth);
-    const handleResize = () => setWindowWidth(window.innerWidth);
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
 
   useEffect(() => {
     async function loadTracks() {
@@ -362,8 +355,6 @@ if (tracks.length === 0) return <p className="text-gray-600">Nema dostupnih pjes
     return `${seconds}`;
   };
 
-  //const isMobile = windowWidth < 768;
-
   return (
     <>
       <div className="container">
@@ -452,12 +443,13 @@ if (tracks.length === 0) return <p className="text-gray-600">Nema dostupnih pjes
         ) : (
           <>
             <div className="correct-answer">
-              <img
+              <Image
                 src={currentTrack.album_image}
                 alt={currentTrack.name}
                 className="album-cover"
                 width={200}
                 height={200}
+                priority
               />
               <h2>{currentTrack.name}</h2>
               <p>Izvođač: {currentTrack.artist}</p>
@@ -740,8 +732,8 @@ if (tracks.length === 0) return <p className="text-gray-600">Nema dostupnih pjes
           }
 
           .album-cover {
-            width: 180px;
-            height: 180px;
+            width: 180px !important;
+            height: 180px !important;
           }
         }
 
@@ -774,8 +766,8 @@ if (tracks.length === 0) return <p className="text-gray-600">Nema dostupnih pjes
           }
 
           .album-cover {
-            width: 160px;
-            height: 160px;
+            width: 160px !important;
+            height: 160px !important;
           }
         }
       `}</style>

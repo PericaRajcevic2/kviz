@@ -274,8 +274,11 @@ export default function Home() {
     usedKeys.add(currentKey);
     if (usedKeys.size > maxMemorySize) {
       const first = usedKeys.values().next().value;
+    if (first !== undefined) {
       usedKeys.delete(first);
     }
+  }
+
 
     const unusedTracks = tracks.filter(
       (t) => !usedKeys.has(`${t.artist} - ${t.name}`)

@@ -438,8 +438,8 @@ if (isCooldownActive && allTracksGuessed) {
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-tr from-green-600 via-emerald-600 to-teal-600 text-white p-8 rounded-lg shadow-xl max-w-md mx-auto text-center">
       <h1 className="text-4xl font-extrabold mb-6 drop-shadow-lg">KVIZ BALKANSKE MUZIKE</h1>
       <div className="cooldown-message space-y-4">
-        <p className="text-2xl font-semibold">Pogodili ste sve današnje pjesme!</p>
-        <p className="text-lg">Novi set pjesama biti će dostupan:</p>
+        <p className="text-2xl font-semibold">To je to za danas!</p>
+        <p className="text-lg">Novi set od 5 pjesama biti će dostupan sutra:</p>
         <p className="cooldown-time text-xl font-mono font-bold bg-white text-green-700 rounded-md px-6 py-3 shadow-md">
           {new Date(cooldownUntil).toLocaleString()}
         </p>

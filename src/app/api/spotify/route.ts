@@ -1,118 +1,121 @@
 import { NextResponse } from "next/server";
 
-// Originalna lista izvođača (može imati duplikate)
-const balkanArtistsRaw = [
-  "Seka Aleksić", "Šaban Šaulić", "Severina", "Željko Joksimović", "Ceca", "Bajaga", "Dino Merlin",
-  "Toše Proeski", "Mile Kitić", "Jelena Karleuša", "Goran Bregović", "Bijelo Dugme", "Zdravko Čolić",
-  "Lepa Brena", "Hari Mata Hari", "Amira Medunjanin", "Đorđe Balašević", "Tropico Band", "Sejo Kalač",
-  "Haris Džinović", "Sabrina", "Nataša Bekvalac", "Marko Perković Thompson", "Riblja Čorba", "Zorica Brunclik",
-  "Boban Rajović", "Maja Šuša", "Marina Perazić", "Jala Brat", "Buba Corelli", "Lepa Lukić", "Jelena Rozga",
-  "Aca Lukas", "Mina Kostić", "Saša Matić", "Harisu", "Toma Zdravković", "Tropico Band", "Vlatko Stefanovski",
-  "Edo Maajka", "Severina Vučković", "Bajaga i Instruktori", "Ana Bekuta", "Halid Bešlić", "Sanja Ilić & Balkanika",
-  "Gibonni", "Plavi Orkestar", "Kristijan Golubović", "Vesna Zmijanac", "Neda Ukraden", "Zdravko Čolić", "Halid Bešlić",
-  "Vesna Zmijanac", "Viki Miljković", "Toma Zdravković", "Bajaga", "Maja Odžaklijevska", "Slavko Banjac",
-  "Sanja Vučić", "Marija Šerifović", "Aleksandra Radović", "Dženan Lončarević", "Rada Manojlović", "Kaliopi",
-  "Severina", "Ivan Zak", "Mitar Mirić", "Ana Nikolić", "Jelena Tomašević", "Oliver Dragojević", "Dženan Rastoder",
-  "Goga Sekulić", "Nataša Džamonja", "Mirsad Kerić", "Bajaga", "Aca Pejović", "Mile Kitić", "Tose Proeski",
-  "Sanja Maletić", "Marinko Rokvić", "Lepa Brena", "Sanja Vučić", "Željko Samardžić", "Dragana Mirković", "Halid Muslimović",
-  "Severina Vučković", "Boban Rajović", "Sergej Ćetković", "Neda Ukraden", "Zorica Brunclik", "Goran Karan",
-  "Arsen Dedić", "Vanna", "Mira Škorić", "Nada Topčagić", "Krunoslav Kićo Slabinac", "Nina Badrić", "Jinx",
-  "Oliver Mandić", "Bajaga", "Čolić Zdravko", "Sanja Ilić", "Maja Blagdan", "Parni Valjak", "Dino Dvornik",
-  "Tanja Savić", "Neda Ukraden", "Jelena Gavrilović", "Tropico Band", "Halid Bešlić", "Ivana Kindl",
-  "Zdravko Čolić", "Bajaga", "Dino Merlin", "Jelena Karleuša", "Severina", "Željko Joksimović", "Šaban Šaulić",
-  "Seka Aleksić", "Tose Proeski", "Mile Kitić", "Ceca"
-];
-
-// Dedupliciraj izvođače
-const uniqueArtists = [...new Set(balkanArtistsRaw.map((a) => a.trim()))];
-
-// Ograniči broj izvođača (npr. prvih 30)
-const selectedArtists = uniqueArtists.slice(0, 30);
-
-// Set za provjeru izvođača (lowercase)
-const allowedArtistsSet = new Set(selectedArtists.map((a) => a.toLowerCase()));
+// Definirani izvođači i pjesme po danima
+const WEEKLY_TRACKS = {
+  ponedjeljak: [
+    { artist: "Ceca", title: "Kukavica" },
+    { artist: "Dino Merlin", title: "Sve je laž" },
+    { artist: "Severina", title: "Mrtav bez mene" },
+    { artist: "Željko Joksimović", title: "Lane moje" },
+    { artist: "Lepa Brena", title: "Čačak, Čačak" }
+  ],
+  utorak: [
+    { artist: "Seka Aleksić", title: "Aspirin" },
+    { artist: "Šaban Šaulić", title: "Dajte mi utjehu" },
+    { artist: "Zdravko Čolić", title: "Ti si mi u krvi" },
+    { artist: "Bijelo Dugme", title: "Đurđevdan" },
+    { artist: "Hari Mata Hari", title: "Strah me da te volim" }
+  ],
+  srijeda: [
+    { artist: "Toše Proeski", title: "Pratim te" },
+    { artist: "Mile Kitić", title: "Kilo dole kilo gore" },
+    { artist: "Jelena Karleuša", title: "Insomnia" },
+    { artist: "Goran Bregović", title: "Kalašnjikov" },
+    { artist: "Bijelo Dugme", title: "Ružica si bila" }
+  ],
+  četvrtak: [
+    { artist: "Zdravko Čolić", title: "Stanica Podlugovi" },
+    { artist: "Lepa Brena", title: "Jugoslovenka" },
+    { artist: "Hari Mata Hari", title: "Lejla" },
+    { artist: "Amira Medunjanin", title: "Ajde Jano" },
+    { artist: "Đorđe Balašević", title: "Priča o Vasi Ladačkom" }
+  ],
+  petak: [
+    { artist: "Tropico Band", title: "Sve moje zore" },
+    { artist: "Sejo Kalač", title: "Baš je dobro vidjeti te opet" },
+    { artist: "Haris Džinović", title: "I tebe sam sit kafano" },
+    { artist: "Sabrina", title: "Boys (Summertime Love)" }, // internacionalna izvođačica
+    { artist: "Nataša Bekvalac", title: "Mala plava" }
+  ],
+  subota: [
+    { artist: "Miach", title: "Led" },
+    { artist: "Grše", title: "Forza" },
+    { artist: "Jelena Karleuša", title: "Insomnia" },
+    { artist: "Jelena Rozga", title: "Roba S Greškom" },
+    { artist: "Bijelo Dugme", title: "Ružica si bila" }
+  ],
+  nedjelja: [
+    { artist: "Marina Perazić", title: "Kolačići" },
+    { artist: "Jala Brat", title: "Patek" },
+    { artist: "Buba Corelli", title: "Balenciaga" },
+    { artist: "Lepa Lukić", title: "Od izvora dva putića" },
+    { artist: "Jelena Rozga", title: "Bižuterija" }
+  ]
+};
 
 interface DeezerTrack {
   id: number;
   title: string;
   preview: string | null;
-  artist: {
-    name: string;
-  };
-  album: {
-    cover_medium: string;
-  };
+  artist: { name: string };
+  album: { cover_medium: string };
 }
 
-async function fetchTracksByArtist(artist: string): Promise<DeezerTrack[]> {
-  const url = `https://api.deezer.com/search?q=artist:"${encodeURIComponent(artist)}"&limit=10`;
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`Deezer API error for artist "${artist}"`);
-  const json = await res.json();
-  return json.data as DeezerTrack[];
-}
-
-async function fetchInBatches(
-  artists: string[],
-  batchSize = 5,
-  delay = 500
-): Promise<DeezerTrack[][]> {
-  const results: DeezerTrack[][] = [];
-  for (let i = 0; i < artists.length; i += batchSize) {
-    const batch = artists.slice(i, i + batchSize);
-    const batchResults = await Promise.allSettled(batch.map(fetchTracksByArtist));
-    for (const result of batchResults) {
-      if (result.status === "fulfilled") {
-        results.push(result.value);
-      } else {
-        console.error("Greška za izvođača:", result.reason);
-      }
-    }
-    await new Promise((r) => setTimeout(r, delay));
+async function fetchTrackDetails(artist: string, title: string): Promise<DeezerTrack | null> {
+  const url = `https://api.deezer.com/search?q=artist:"${encodeURIComponent(artist)}" track:"${encodeURIComponent(title)}"`;
+  try {
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    const json = await res.json();
+    return json.data?.[0] || null;
+  } catch (e) {
+    console.error(`Greška pri dohvatu pjesme ${title} - ${artist}:`, e);
+    return null;
   }
-  return results;
+}
+
+function getCurrentDay() {
+  const days = ['nedjelja', 'ponedjeljak', 'utorak', 'srijeda', 'četvrtak', 'petak', 'subota'];
+
+  return days[new Date().getDay()];
 }
 
 export async function GET() {
   try {
-    const results = await fetchInBatches(selectedArtists);
+    const currentDay = getCurrentDay();
+    const dailyTracks = WEEKLY_TRACKS[currentDay as keyof typeof WEEKLY_TRACKS] || [];
 
-    const allTracks = results
-      .flat()
-      .filter(
-        (t) =>
-          t.preview !== null &&
-          allowedArtistsSet.has(t.artist.name.toLowerCase())
+    // Dohvati detalje za svaku pjesmu
+    const trackDetails = await Promise.all(
+      dailyTracks.map(track => fetchTrackDetails(track.artist, track.title))
+    );
+
+    const validTracks = trackDetails.filter(t => t !== null) as DeezerTrack[];
+
+    if (validTracks.length === 0) {
+      return NextResponse.json(
+        { error: "Nema dostupnih pjesama za današnji dan." },
+        { status: 404 }
       );
-
-    // Dedupliciraj pjesme po nazivu + izvođaču
-    const uniqueTrackMap = new Map<string, DeezerTrack>();
-    for (const t of allTracks) {
-      const key = `${t.title.toLowerCase()}___${t.artist.name.toLowerCase()}`;
-      if (!uniqueTrackMap.has(key)) {
-        uniqueTrackMap.set(key, t);
-      }
     }
 
-    const deduplicatedTracks = Array.from(uniqueTrackMap.values());
-
-    // Promiješaj i uzmi 20 pjesama
-    const shuffled = deduplicatedTracks.sort(() => 0.5 - Math.random()).slice(0, 20);
-
-    const responseTracks = shuffled.map((t) => ({
+    const responseTracks = validTracks.map((t) => ({
       name: t.title,
       artist: t.artist.name,
       preview_url: t.preview,
       album_image: t.album.cover_medium,
     }));
 
-    return NextResponse.json(responseTracks);
+    return NextResponse.json({
+      tracks: responseTracks,
+      day: currentDay,
+      cooldownUntil: new Date(new Date().setHours(24, 0, 0, 0)).toISOString()
+    });
   } catch (e) {
-    console.error("Greška u Deezer API pozivu:", e);
+    console.error("Greška u API pozivu:", e);
     return NextResponse.json(
-      { error: "Ne mogu dohvatiti pjesme s Deezer-a." },
+      { error: "Došlo je do greške pri dohvatu pjesama." },
       { status: 500 }
     );
   }
 }
-

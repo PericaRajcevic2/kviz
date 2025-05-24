@@ -11,7 +11,7 @@ type Track = {
   album_image: string;
 };
 
-const ATTEMPT_DURATIONS = [1000, 3000, 5000, 10000, 15000, 30000]; // ms
+const ATTEMPT_DURATIONS = [1000, 3000, 5000, 10000, 15000, 30000];
 
 const normalizeText = (text: string) => {
   return text
@@ -51,33 +51,65 @@ export default function Home() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
+  const [cooldownUntil, setCooldownUntil] = useState<string | null>(null);
+  const [currentDay, setCurrentDay] = useState<string | null>(null);
+  const [guessedTracks, setGuessedTracks] = useState<Set<string>>(new Set());
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
-
   const [userGuess, setUserGuess] = useState("");
   const [isCorrect, setIsCorrect] = useState(false);
   const [guessAttempt, setGuessAttempt] = useState(0);
   const [showSuggestions, setShowSuggestions] = useState(false);
-
+  const [shake, setShake] = useState(false);
+  const [elapsedTime, setElapsedTime] = useState(0);
+  const [countdown, setCountdown] = useState<string | null>(null);
+  const [playedTracksCount, setPlayedTracksCount] = useState(0);
+  const [volume, setVolume] = useState(0.5); // Početna vrijednost 70%
   const playTimeout = useRef<NodeJS.Timeout | null>(null);
   const intervalTimer = useRef<NodeJS.Timeout | null>(null);
   const usedTracksRef = useRef<Set<string>>(new Set());
   const maxMemorySize = 20;
 
-  const [shake, setShake] = useState(false);
-  const [elapsedTime, setElapsedTime] = useState(0);
+  const isCooldownActive = cooldownUntil && new Date() < new Date(cooldownUntil);
+  const reachedMaxAttempts = playedTracksCount >= 5;
+
+    // Postavi glasnoću kada se promijeni
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.volume = volume;
+    }
+  }, [volume]);
 
   useEffect(() => {
+    const savedGuesses = localStorage.getItem('guessedTracks');
+    if (savedGuesses) {
+      setGuessedTracks(new Set(JSON.parse(savedGuesses)));
+    }
+
     async function loadTracks() {
       try {
         const res = await fetch("/api/spotify");
         if (!res.ok) throw new Error("Greška pri dohvaćanju pjesama.");
-        const data: Track[] = await res.json();
-        if (!Array.isArray(data) || data.length === 0) {
+        const data = await res.json();
+        
+        if (data.error) {
+          throw new Error(data.error);
+        }
+
+        const tracksData = Array.isArray(data) ? data : data.tracks;
+        const cooldown = data.cooldownUntil || null;
+        const day = data.day || null;
+
+        if (!Array.isArray(tracksData)) {
+          throw new Error("Neispravan format pjesama.");
+        }
+        if (tracksData.length === 0) {
           throw new Error("Nema pjesama za reprodukciju.");
         }
-        setTracks(data);
+
+        setTracks(tracksData);
+        setCooldownUntil(cooldown);
+        setCurrentDay(day);
         setCurrentIndex(0);
         setGuessAttempt(0);
         setLoading(false);
@@ -92,6 +124,47 @@ export default function Home() {
     }
     loadTracks();
   }, []);
+
+  useEffect(() => {
+    localStorage.setItem('guessedTracks', JSON.stringify([...guessedTracks]));
+  }, [guessedTracks]);
+
+  useEffect(() => {
+    if (!cooldownUntil) {
+      setCountdown(null);
+      return;
+    }
+    const cooldownDate = new Date(cooldownUntil);
+    if (new Date() >= cooldownDate) {
+      setCountdown(null);
+      return;
+    }
+
+    const updateCountdown = () => {
+      const now = new Date();
+      const diff = cooldownDate.getTime() - now.getTime();
+
+      if (diff <= 0) {
+        setCountdown(null);
+        return;
+      }
+
+      const hours = Math.floor(diff / (1000 * 60 * 60));
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+      setCountdown(
+        `${hours.toString().padStart(2, '0')}:${minutes
+          .toString()
+          .padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
+      );
+    };
+
+    updateCountdown();
+    const timer = setInterval(updateCountdown, 1000);
+
+    return () => clearInterval(timer);
+  }, [cooldownUntil]);
 
   useEffect(() => {
     setUserGuess("");
@@ -230,13 +303,7 @@ export default function Home() {
         (part1 === normalizedArtist && part2 === normalizedTrackName) ||
         (part1 === normalizedTrackName && part2 === normalizedArtist)
       ) {
-        setIsCorrect(true);
-        if (audioRef.current) {
-          audioRef.current.pause();
-          setIsPlaying(false);
-        }
-        if (playTimeout.current) clearTimeout(playTimeout.current);
-        if (intervalTimer.current) clearInterval(intervalTimer.current);
+        handleCorrectGuess(currentTrack);
         return;
       }
     }
@@ -247,17 +314,28 @@ export default function Home() {
       normalizedGuess === `${normalizedArtist} ${normalizedTrackName}` ||
       normalizedGuess === `${normalizedTrackName} ${normalizedArtist}`
     ) {
-      setIsCorrect(true);
-      if (audioRef.current) {
-        audioRef.current.pause();
-        setIsPlaying(false);
-      }
-      if (playTimeout.current) clearTimeout(playTimeout.current);
-      if (intervalTimer.current) clearInterval(intervalTimer.current);
+      handleCorrectGuess(currentTrack);
       return;
     }
 
     shakeInput();
+  };
+
+  const handleCorrectGuess = (currentTrack: Track) => {
+    setIsCorrect(true);
+    setGuessedTracks(prev => {
+      const newSet = new Set(prev);
+      newSet.add(`${currentTrack.artist} - ${currentTrack.name}`);
+      return newSet;
+    });
+    setPlayedTracksCount(prev => prev + 1);
+    
+    if (audioRef.current) {
+      audioRef.current.pause();
+      setIsPlaying(false);
+    }
+    if (playTimeout.current) clearTimeout(playTimeout.current);
+    if (intervalTimer.current) clearInterval(intervalTimer.current);
   };
 
   const shakeInput = () => {
@@ -268,17 +346,21 @@ export default function Home() {
   const nextTrack = () => {
     if (tracks.length <= 1) return;
 
+    if (guessedTracks.size >= tracks.length) {
+      setIsCorrect(true);
+      return;
+    }
+
     const usedKeys = usedTracksRef.current;
     const currentKey = `${tracks[currentIndex].artist} - ${tracks[currentIndex].name}`;
 
     usedKeys.add(currentKey);
     if (usedKeys.size > maxMemorySize) {
       const first = usedKeys.values().next().value;
-    if (first !== undefined) {
-      usedKeys.delete(first);
+      if (first !== undefined) {
+        usedKeys.delete(first);
+      }
     }
-  }
-
 
     const unusedTracks = tracks.filter(
       (t) => !usedKeys.has(`${t.artist} - ${t.name}`)
@@ -305,6 +387,7 @@ export default function Home() {
       setGuessAttempt(guessAttempt + 1);
     } else {
       setIsCorrect(true);
+      setPlayedTracksCount(prev => prev + 1);
       if (audioRef.current) {
         audioRef.current.pause();
         setIsPlaying(false);
@@ -314,40 +397,58 @@ export default function Home() {
     }
   };
 
-  if (loading)
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="flex flex-col items-center gap-4">
+          <ClipLoader size={60} color="#3B82F6" />
+          <p className="text-lg text-gray-700">Učitavanje pjesama...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) return <p className="text-red-500">Greška: {error}</p>;
+  if (tracks.length === 0) return <p className="text-gray-600">Nema dostupnih pjesama.</p>;
+
+  const allTracksGuessed = guessedTracks.size >= tracks.length;
+
+if (isCooldownActive && reachedMaxAttempts) {
   return (
-    <div className="flex items-center justify-center h-screen">
-      <div className="flex flex-col items-center gap-4">
-        <ClipLoader size={60} color="#3B82F6" />
-        <p className="text-lg text-gray-700">Učitavanje pjesama...</p>
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-r from-purple-700 via-indigo-700 to-blue-700 text-white p-8 rounded-lg shadow-xl max-w-md mx-auto">
+      <h1 className="text-4xl font-extrabold mb-4 drop-shadow-lg">KVIZ BALKANSKE MUZIKE</h1>
+      {currentDay && <p className="mb-6 text-lg italic opacity-80">Današnji dan: {currentDay}</p>}
+      {tracks.length > 0 && (
+        <audio ref={audioRef} style={{ display: "none" }} controls>
+          <source src={tracks[currentIndex]?.preview_url || ''} type="audio/mpeg" />
+          Tvoj browser ne podržava audio element.
+        </audio>
+      )}
+      <p className="text-center text-xl font-semibold mb-2">Iskoristili ste svih 5 pokušaja za danas.</p>
+      <p className="text-center mb-4">Sljedeći pokušaji bit će dostupni za:</p>
+      <p className="countdown-timer text-3xl font-mono font-bold bg-white text-purple-800 rounded-md px-6 py-3 shadow-lg animate-pulse">
+        {countdown || "učitavanje..."}
+      </p>
+    </div>
+  );
+}
+
+if (isCooldownActive && allTracksGuessed) {
+  return (
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-tr from-green-600 via-emerald-600 to-teal-600 text-white p-8 rounded-lg shadow-xl max-w-md mx-auto text-center">
+      <h1 className="text-4xl font-extrabold mb-6 drop-shadow-lg">KVIZ BALKANSKE MUZIKE</h1>
+      <div className="cooldown-message space-y-4">
+        <p className="text-2xl font-semibold">Pogodili ste sve današnje pjesme!</p>
+        <p className="text-lg">Novi set pjesama biti će dostupan:</p>
+        <p className="cooldown-time text-xl font-mono font-bold bg-white text-green-700 rounded-md px-6 py-3 shadow-md">
+          {new Date(cooldownUntil).toLocaleString()}
+        </p>
       </div>
     </div>
   );
-
-if (error) return <p className="text-red-500">Greška: {error}</p>;
-if (tracks.length === 0) return <p className="text-gray-600">Nema dostupnih pjesama.</p>;
+}
 
   const currentTrack = tracks[currentIndex];
-
-  let suggestions: string[] = [];
-  if (userGuess.length >= 1) {
-    const guessLower = normalizeText(userGuess);
-
-    const filtered = tracks
-      .map((t) => `${t.artist} - ${t.name}`)
-      .filter((full) => normalizeText(full).includes(guessLower));
-
-    const randomSuggestions = randomSample(filtered, 5);
-    suggestions = randomSuggestions;
-
-    const currentFull = `${currentTrack.artist} - ${currentTrack.name}`;
-    const similarity = startsWithSimilarity(normalizeText(currentFull), guessLower);
-    if (similarity >= 0.4 && !suggestions.includes(currentFull)) {
-      suggestions.push(currentFull);
-    }
-    suggestions = Array.from(new Set(suggestions));
-  }
-
   const progressPercent =
     elapsedTime && ATTEMPT_DURATIONS[guessAttempt]
       ? Math.min((elapsedTime / ATTEMPT_DURATIONS[guessAttempt]) * 100, 100)
@@ -358,118 +459,165 @@ if (tracks.length === 0) return <p className="text-gray-600">Nema dostupnih pjes
     return seconds < 1 ? seconds.toFixed(1) : Math.floor(seconds).toString();
   };
 
-  return (
-    <>
-      <div className="container">
-        <h1>Balkan Muzika Kviz</h1>
+  let suggestions: string[] = [];
+  if (userGuess.length >= 1) {
+    const guessLower = normalizeText(userGuess);
+    const filtered = tracks
+      .map((t) => `${t.artist} - ${t.name}`)
+      .filter((full) => normalizeText(full).includes(guessLower));
+    const randomSuggestions = randomSample(filtered, 5);
+    suggestions = randomSuggestions;
+    const currentFull = `${currentTrack.artist} - ${currentTrack.name}`;
+    const similarity = startsWithSimilarity(normalizeText(currentFull), guessLower);
+    if (similarity >= 0.4 && !suggestions.includes(currentFull)) {
+      suggestions.push(currentFull);
+    }
+    suggestions = Array.from(new Set(suggestions));
+  }
 
-        <audio ref={audioRef} style={{ display: "none" }} controls>
-          <source src={currentTrack.preview_url} type="audio/mpeg" />
-          Tvoj browser ne podržava audio element.
-        </audio>
+  const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const newVolume = parseFloat(e.target.value);
+  setVolume(newVolume);
+  if (audioRef.current) {
+    audioRef.current.volume = newVolume;
+  }
+};
 
-        <div className="stage-info">
-          <div className="stage-title">Pokušaj {guessAttempt + 1}</div>
-          <div className="stage-time">{formatTime(elapsedTime)} sekundi</div>
-        </div>
+return (
+  <>
+    <div className="container">
+      <h1>KVIZ BALKANSKE MUZIKE</h1>
+      {currentDay && <p className="day-info">Današnji dan: {currentDay}</p>}
 
-        <div className="progress-container">
-          <div className="progress-labels">
-            <span>0:00</span>
-            <span>0:30</span>
-          </div>
-          <div className="progress-track">
-            <div
-              className="progress-bar"
-              style={{ width: `${progressPercent}%` }}
-            ></div>
-            {ATTEMPT_DURATIONS.map((_, i) => {
-              let status = "";
-              if (i < guessAttempt) status = "skipped";
-              else if (i === guessAttempt) status = "active";
+      <audio ref={audioRef} style={{ display: "none" }} controls>
+        <source src={currentTrack.preview_url} type="audio/mpeg" />
+        Tvoj browser ne podržava audio element.
+      </audio>
 
-              return (
-                <div key={i} className={`progress-marker ${status}`}>
-                  {i + 1}
-                </div>
-              );
-            })}
-          </div>
-        </div>
+      
 
-        {!isCorrect ? (
-          <>
-            <div className="search-container">
-              <div className="search-icon">🔍</div>
-              <input
-                type="text"
-                value={userGuess}
-                onChange={(e) => {
-                  setUserGuess(e.target.value);
-                  setShowSuggestions(true);
-                }}
-                placeholder="Znaš pjesmu? Upisi naziv izvođača i pjesme"
-                className={`search-input ${shake ? "shake" : ""}`}
-                autoComplete="off"
-              />
-              {showSuggestions && suggestions.length > 0 && (
-                <ul className="suggestions-list">
-                  {suggestions.map((s, i) => (
-                    <li
-                      key={i}
-                      className="suggestion-item"
-                      onClick={() => {
-                        setUserGuess(s);
-                        setShowSuggestions(false);
-                      }}
-                    >
-                      {s}
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-
-            <div className="button-group">
-              <button onClick={nextAttempt} className="skip-button">
-                PRESKOČI
-              </button>
-              <button onClick={checkGuess} className="submit-button">
-                POTVRDI
-              </button>
-            </div>
-
-            <button onClick={togglePlay} className="play-button">
-              {isPlaying ? "Pauziraj" : "Pokreni"}
-            </button>
-          </>
-        ) : (
-          <>
-            <div className="correct-answer">
-              <Image
-                src={currentTrack.album_image}
-                alt={currentTrack.name}
-                className="album-cover"
-                width={200}
-                height={200}
-                priority
-              />
-              <h2>{currentTrack.name}</h2>
-              <p>Izvođač: {currentTrack.artist}</p>
-            </div>
-
-            <button onClick={nextTrack} className="next-button">
-              Sljedeća pjesma
-            </button>
-          </>
-        )}
+      <div className="stage-info">
+        <div className="stage-title">Pokušaj {guessAttempt + 1}</div>
+        <div className="stage-time">{formatTime(elapsedTime)} sekundi</div>
       </div>
 
-      <main className="flex flex-col min-h-screen items-center justify-between p-8">
+      <div className="progress-container">
+        <div className="progress-labels">
+          <span>0:00</span>
+          <span>0:30</span>
+        </div>
+        <div className="progress-track">
+          <div
+            className="progress-bar"
+            style={{ width: `${progressPercent}%` }}
+          ></div>
+          {ATTEMPT_DURATIONS.map((_, i) => {
+            let status = "";
+            if (i < guessAttempt) status = "skipped";
+            else if (i === guessAttempt) status = "active";
+
+            return (
+              <div key={i} className={`progress-marker ${status}`}>
+                {i + 1}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {!isCorrect ? (
+        <>
+          <div className="search-container">
+            <div className="search-icon">🔍</div>
+            <input
+              type="text"
+              value={userGuess}
+              onChange={(e) => {
+                setUserGuess(e.target.value);
+                setShowSuggestions(true);
+              }}
+              placeholder="Znaš pjesmu? Upisi naziv izvođača i pjesme"
+              className={`search-input ${shake ? "shake" : ""}`}
+              autoComplete="off"
+            />
+            {showSuggestions && suggestions.length > 0 && (
+              <ul className="suggestions-list">
+                {suggestions.map((s, i) => (
+                  <li
+                    key={i}
+                    className="suggestion-item"
+                    onClick={() => {
+                      setUserGuess(s);
+                      setShowSuggestions(false);
+                    }}
+                  >
+                    {s}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+
+          <div className="button-group">
+            <button onClick={nextAttempt} className="skip-button">
+              PRESKOČI
+            </button>
+            <button onClick={checkGuess} className="submit-button">
+              POTVRDI
+            </button>
+          </div>
+
+          <button onClick={togglePlay} className="play-button">
+            {isPlaying ? "Pauziraj" : "Pokreni"}
+          </button>
+
+          {/* Dodan slider za glasnoću */}
+        <div className="volume-control mb-6 w-full max-w-md mx-auto">
+          <label htmlFor="volume" className="block text-sm font-semibold text-gray-800 mb-2 select-none">
+            Glasnoća: <span className="text-indigo-600"> {Math.round(volume * 100)}% </span>
+          </label>
+          <input
+            type="range"
+            id="volume"
+            min="0"
+            max="1"
+            step="0.01"
+            value={volume}
+            onChange={handleVolumeChange}
+            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+          />
+        </div>
+        </>
+      ) : (
+        <>
+          <div className="correct-answer">
+            <Image
+              src={currentTrack.album_image}
+              alt={currentTrack.name}
+              className="album-cover"
+              width={200}
+              height={200}
+              priority
+            />
+            <h2>{currentTrack.name}</h2>
+            <p>Izvođač: {currentTrack.artist}</p>
+            <p className="guessed-count">
+              Pogodjeno {guessedTracks.size} od {tracks.length} pjesama
+            </p>
+          </div>
+
+          <button onClick={nextTrack} className="next-button">
+            {guessedTracks.size >= tracks.length
+              ? "Čekajte sutrašnje pjesme"
+              : "Sljedeća pjesma"}
+          </button>
+        </>
+      )}
+    </div>
+
+    <main className="flex flex-col min-h-screen items-center justify-between p-8">
       {/* Glavni sadržaj */}
-      <div className="flex-1 w-full max-w-2xl">
-       
-      </div>
+      <div className="flex-1 w-full max-w-2xl"></div>
 
       {/* Footer */}
       <footer className="w-full text-center text-sm text-gray-500 py-4 mt-8">
@@ -477,7 +625,6 @@ if (tracks.length === 0) return <p className="text-gray-600">Nema dostupnih pjes
       </footer>
     </main>
   
-
 
       <style jsx>{`
         .container {
@@ -497,7 +644,100 @@ if (tracks.length === 0) return <p className="text-gray-600">Nema dostupnih pjes
           font-weight: 700;
           font-size: 24px;
         }
+        
+                .day-info {
+          font-size: 14px;
+          margin-bottom: 10px;
+          color: rgba(255, 255, 255, 0.8);
+        }
 
+.cooldown-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  max-width: 400px;
+  margin: 0 auto;
+  background: linear-gradient(90deg, #6b21a8, #4338ca, #2563eb); /* ljubičasto-plavi gradient */
+  color: white;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(101, 31, 255, 0.6);
+  text-align: center;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.cooldown-container h1 {
+  font-size: 2.5rem;
+  font-weight: 800;
+  margin-bottom: 1rem;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.7);
+}
+
+.day-info {
+  font-style: italic;
+  opacity: 0.8;
+  margin-bottom: 1.5rem;
+  font-size: 1.1rem;
+}
+
+.cooldown-container p {
+  font-size: 1.25rem;
+  margin-bottom: 0.8rem;
+}
+
+.countdown-timer {
+  font-family: monospace;
+  font-weight: 700;
+  font-size: 2rem;
+  background: white;
+  color: #7c3aed; /* ljubičasta */
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(124, 58, 237, 0.5);
+  animation: pulse 2s infinite;
+  display: inline-block;
+}
+
+/* Animacija suptilnog treptanja */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* Za cooldown-message u drugom slučaju */
+.cooldown-message {
+  margin-top: 1rem;
+}
+
+.cooldown-message p {
+  font-size: 1.3rem;
+  margin-bottom: 1rem;
+}
+
+.cooldown-time {
+  font-family: monospace;
+  font-weight: 700;
+  font-size: 1.75rem;
+  background: white;
+  color: #22c55e; /* zelena */
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(34, 197, 94, 0.5);
+  display: inline-block;
+}
+
+        .guessed-count {
+          margin-top: 10px;
+          font-size: 14px;
+          color: rgba(255, 255, 255, 0.7);
+        }
+          
         .stage-info {
           margin-bottom: 15px;
         }

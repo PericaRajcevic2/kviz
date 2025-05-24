@@ -1,3 +1,5 @@
+/*
+
 // components/DeezerSuggestions.tsx
 "use client";
 
@@ -68,3 +70,5 @@ export const getDeezerSuggestions = async (
     return [];
   }
 };
+
+*/

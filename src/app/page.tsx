@@ -459,21 +459,42 @@ if (isCooldownActive && allTracksGuessed) {
     return seconds < 1 ? seconds.toFixed(1) : Math.floor(seconds).toString();
   };
 
-  let suggestions: string[] = [];
-  if (userGuess.length >= 1) {
-    const guessLower = normalizeText(userGuess);
-    const filtered = tracks
-      .map((t) => `${t.artist} - ${t.name}`)
-      .filter((full) => normalizeText(full).includes(guessLower));
-    const randomSuggestions = randomSample(filtered, 5);
-    suggestions = randomSuggestions;
-    const currentFull = `${currentTrack.artist} - ${currentTrack.name}`;
-    const similarity = startsWithSimilarity(normalizeText(currentFull), guessLower);
-    if (similarity >= 0.4 && !suggestions.includes(currentFull)) {
-      suggestions.push(currentFull);
-    }
-    suggestions = Array.from(new Set(suggestions));
+let suggestions: string[] = [];
+if (userGuess.length >= 1) {
+  const guessLower = normalizeText(userGuess);
+  
+  // 1. Napravimo listu svih mogućih pjesama
+  const allPossibleSuggestions = tracks.map(t => `${t.artist} - ${t.name}`);
+  
+  // 2. Izvučemo one koje sadrže upisani tekst
+  const matchingSuggestions = allPossibleSuggestions.filter(s => 
+    normalizeText(s).includes(guessLower)
+  );
+  
+  // 3. Dodamo trenutnu pjesmu ako je sličnost dovoljno velika
+  const currentFull = `${currentTrack.artist} - ${currentTrack.name}`;
+  const currentNormalized = normalizeText(currentFull);
+  const similarity = startsWithSimilarity(currentNormalized, guessLower);
+  
+  if (similarity >= 0.4 && !matchingSuggestions.includes(currentFull)) {
+    matchingSuggestions.push(currentFull);
   }
+  
+  // 4. Dodamo nekoliko potpuno nasumičnih pjesama (30% šanse)
+  if (Math.random() < 0.3) {
+    const randomTracks = randomSample(
+      allPossibleSuggestions.filter(s => !matchingSuggestions.includes(s)),
+      2
+    );
+    matchingSuggestions.push(...randomTracks);
+  }
+  
+  // 5. Izmiješamo sve prijedloge
+  suggestions = randomSample(matchingSuggestions, 5);
+  
+  // 6. Ako ima previše prijedloga, uzmemo prvih 5
+  suggestions = suggestions.slice(0, 5);
+}
 
   const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
   const newVolume = parseFloat(e.target.value);

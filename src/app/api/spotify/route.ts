@@ -3,53 +3,53 @@ import { NextResponse } from "next/server";
 // Definirani izvođači i pjesme po danima
 const WEEKLY_TRACKS = {
   ponedjeljak: [
-    { artist: "Ceca", title: "Kukavica" },
-    { artist: "Dino Merlin", title: "Sve je laž" },
-    { artist: "Severina", title: "Mrtav bez mene" },
-    { artist: "Željko Joksimović", title: "Lane moje" },
-    { artist: "Lepa Brena", title: "Čačak, Čačak" }
+    { artist: "Breskvica", title: "Sava i Dunav" },
+{ artist: "Jala Brat", title: "Klinka" },
+{ artist: "Mia Borisavljević", title: "Nisi svestan" },
+{ artist: "Relja Popović", title: "Samo jako" },
+{ artist: "Teodora", title: "Drama" }
   ],
   utorak: [
-    { artist: "Seka Aleksić", title: "Aspirin" },
-    { artist: "Šaban Šaulić", title: "Dajte mi utjehu" },
-    { artist: "Zdravko Čolić", title: "Ti si mi u krvi" },
-    { artist: "Bijelo Dugme", title: "Đurđevdan" },
-    { artist: "Hari Mata Hari", title: "Strah me da te volim" }
+    { artist: "Voyage", title: "Pleši" },
+{ artist: "Rasta", title: "Adio Amore" },
+{ artist: "Milica Pavlović", title: "Provereno" },
+{ artist: "Sara Jo", title: "Zar ne" },
+{ artist: "Nucci", title: "Crno oko" }
   ],
   srijeda: [
-    { artist: "Toše Proeski", title: "Pratim te" },
-    { artist: "Mile Kitić", title: "Kilo dole kilo gore" },
-    { artist: "Jelena Karleuša", title: "Insomnia" },
-    { artist: "Goran Bregović", title: "Kalašnjikov" },
-    { artist: "Bijelo Dugme", title: "Ružica si bila" }
+    { artist: "Senidah", title: "Beli svemir" },
+{ artist: "Coby", title: "Rambo" },
+{ artist: "Anastasija", title: "Savršen par" },
+{ artist: "Maya Berović", title: "Leti" },
+{ artist: "MC Stojan", title: "Salji broj" }
   ],
   četvrtak: [
-    { artist: "Zdravko Čolić", title: "Stanica Podlugovi" },
-    { artist: "Lepa Brena", title: "Jugoslovenka" },
-    { artist: "Hari Mata Hari", title: "Lejla" },
-    { artist: "Amira Medunjanin", title: "Ajde Jano" },
-    { artist: "Đorđe Balašević", title: "Priča o Vasi Ladačkom" }
+    { artist: "Teya Dora", title: "Džanum" },
+{ artist: "Emrah Emšo", title: "Jedina" },
+{ artist: "Aleksandra Prijović", title: "Devet života" },
+{ artist: "Aca Lukas", title: "Licem u lice" },
+{ artist: "Inas", title: "Karmin" }
   ],
   petak: [
-    { artist: "Tropico Band", title: "Sve moje zore" },
-    { artist: "Sejo Kalač", title: "Baš je dobro vidjeti te opet" },
-    { artist: "Haris Džinović", title: "I tebe sam sit kafano" },
-    { artist: "Sabrina", title: "Boys (Summertime Love)" }, // internacionalna izvođačica
-    { artist: "Nataša Bekvalac", title: "Mala plava" }
+    { artist: "Edita", title: "Slobodno me rani" },
+{ artist: "Sloba Radanović", title: "Zauvek" },
+{ artist: "Igor Garnier", title: "We Let It Go" },
+{ artist: "Zera", title: "Do zore" },
+{ artist: "Tanja Savić", title: "Suknjica" }
   ],
   subota: [
-    { artist: "Miach", title: "Led" },
+    { artist: "Miach", title: "Anđeo" },
     { artist: "Grše", title: "Forza" },
-    { artist: "Jelena Karleuša", title: "Insomnia" },
-    { artist: "Jelena Rozga", title: "Roba S Greškom" },
-    { artist: "Bijelo Dugme", title: "Ružica si bila" }
+    { artist: "Elma", title: "Ah, Tugo, Tugo" },
+    { artist: "Darko Lazić", title: "Idi Drugome" },
+    { artist: "Devito", title: "Svemir" }
   ],
   nedjelja: [
-    { artist: "Marina Perazić", title: "Kolačići" },
-    { artist: "Jala Brat", title: "Patek" },
-    { artist: "Buba Corelli", title: "Balenciaga" },
-    { artist: "Lepa Lukić", title: "Od izvora dva putića" },
-    { artist: "Jelena Rozga", title: "Bižuterija" }
+    { artist: "Đogani", title: "Idemo na sve" },
+{ artist: "Luna Đogani", title: "Deveti krug" },
+{ artist: "Bojan Tomović", title: "Puklo srce" },
+{ artist: "Nikolija", title: "Loš momak" },
+{ artist: "Bojana Vunturišević", title: "Money" }
   ]
 };
 

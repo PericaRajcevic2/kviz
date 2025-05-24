@@ -425,6 +425,7 @@ if (isCooldownActive && reachedMaxAttempts) {
         </audio>
       )}
       <p className="text-center text-xl font-semibold mb-2">Iskoristili ste svih 5 pokušaja za danas.</p>
+      <p className="text-center mb-2">Pogodili ste {guessedTracks.size} od 5 pjesama.</p>
       <p className="text-center mb-4">Sljedeći pokušaji bit će dostupni za:</p>
       <p className="countdown-timer text-3xl font-mono font-bold bg-white text-purple-800 rounded-md px-6 py-3 shadow-lg animate-pulse">
         {countdown || "učitavanje..."}
@@ -439,6 +440,7 @@ if (isCooldownActive && allTracksGuessed) {
       <h1 className="text-4xl font-extrabold mb-6 drop-shadow-lg">KVIZ BALKANSKE MUZIKE</h1>
       <div className="cooldown-message space-y-4">
         <p className="text-2xl font-semibold">To je to za danas!</p>
+        <p className="text-lg">Pogodili ste svih 5 pjesama! 🎉</p>
         <p className="text-lg">Novi set od 5 pjesama biti će dostupan sutra:</p>
         <p className="cooldown-time text-xl font-mono font-bold bg-white text-green-700 rounded-md px-6 py-3 shadow-md">
           {new Date(cooldownUntil).toLocaleString()}

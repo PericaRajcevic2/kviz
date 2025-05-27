@@ -84,7 +84,7 @@ export default function Home() {
       const now = new Date();
       const cooldownDate = new Date(cooldownUntil);
       return now < cooldownDate;
-    } catch (e) {
+    } catch (error) {
       console.error("Invalid cooldownUntil date:", cooldownUntil);
       return false;
     }
@@ -141,9 +141,9 @@ export default function Home() {
         setCurrentIndex(0);
         setGuessAttempt(0);
         setLoading(false);
-      } catch (e: unknown) {
-        if (e instanceof Error) {
-          setError(e.message);
+      } catch (error: unknown) {
+        if (error instanceof Error) {
+          setError(error.message);
         } else {
           setError("Greška.");
         }
@@ -216,9 +216,9 @@ useEffect(() => {
         setCurrentIndex(0);
         setGuessAttempt(0);
         setLoading(false);
-      } catch (e: unknown) {
-        if (e instanceof Error) {
-          setError(e.message);
+      } catch (error: unknown) {
+        if (error instanceof Error) {
+          setError(error.message);
         } else {
           setError("Greška.");
         }
@@ -619,7 +619,7 @@ useEffect(() => {
       try {
         const cooldownDate = new Date(cooldownUntil);
         setCountdown(formatCountdown(cooldownDate));
-      } catch (e) {
+      } catch (error) {
         console.error("Invalid cooldown date:", cooldownUntil);
         setCountdown("00:00:00");
       }
@@ -668,8 +668,8 @@ if (userGuess.length >= 1) {
   suggestions = suggestions.slice(0, 5);
 }
 
-  const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  const newVolume = parseFloat(e.target.value);
+  const handleVolumeChange = (error: React.ChangeEvent<HTMLInputElement>) => {
+  const newVolume = parseFloat(error.target.value);
   setVolume(newVolume);
   if (audioRef.current) {
     audioRef.current.volume = newVolume;
@@ -725,8 +725,8 @@ return (
             <input
               type="text"
               value={userGuess}
-              onChange={(e) => {
-                setUserGuess(e.target.value);
+              onChange={(error) => {
+                setUserGuess(error.target.value);
                 setShowSuggestions(true);
               }}
               placeholder="Znaš pjesmu? Upisi naziv izvođača i pjesme"

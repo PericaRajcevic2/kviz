@@ -89,7 +89,7 @@ export default function Home() {
 
   // 4. Derived constants
   const reachedMaxAttempts = playedTracksCount >= MAX_DAILY_ATTEMPTS;
-  const allTracksGuessed = guessedTracks.size >= MAX_DAILY_ATTEMPTS;
+  //const allTracksGuessed = guessedTracks.size >= MAX_DAILY_ATTEMPTS;
   const maxMemorySize = 20;
 
   // Helper functions

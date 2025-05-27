@@ -4,7 +4,6 @@ import { useEffect, useState, useRef, useMemo } from "react";
 import { ClipLoader } from "react-spinners";
 import Image from "next/image";
 
-
 type Track = {
   name: string;
   artist: string;
@@ -49,6 +48,7 @@ function startsWithSimilarity(a: string, b: string): number {
 }
 
 export default function Home() {
+  // 1. All useState hooks first
   const [tracks, setTracks] = useState<Track[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -56,7 +56,6 @@ export default function Home() {
   const [cooldownUntil, setCooldownUntil] = useState<string | null>(null);
   const [currentDay, setCurrentDay] = useState<string | null>(null);
   const [guessedTracks, setGuessedTracks] = useState<Set<string>>(new Set());
-  const audioRef = useRef<HTMLAudioElement | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [userGuess, setUserGuess] = useState("");
   const [isCorrect, setIsCorrect] = useState(false);
@@ -67,32 +66,56 @@ export default function Home() {
   const [countdown, setCountdown] = useState<string | null>(null);
   const [playedTracksCount, setPlayedTracksCount] = useState(0);
   const [volume, setVolume] = useState(0.5);
+  const [lastPlayedDate, setLastPlayedDate] = useState<string | null>(null);
+
+  // 2. All useRef hooks next
+  const audioRef = useRef<HTMLAudioElement | null>(null);
   const playTimeout = useRef<NodeJS.Timeout | null>(null);
   const intervalTimer = useRef<NodeJS.Timeout | null>(null);
   const usedTracksRef = useRef<Set<string>>(new Set());
-  const maxMemorySize = 20;
-  const [lastPlayedDate, setLastPlayedDate] = useState<string | null>(null);
 
-  //const isCooldownActive = cooldownUntil && new Date() < new Date(cooldownUntil);
-  //const reachedMaxAttempts = playedTracksCount >= 5;
-  const [shouldReset, setShouldReset] = useState(false);
-
-
+  // 3. useMemo hooks
   const isCooldownActive = useMemo(() => {
     if (!cooldownUntil) return false;
     try {
       const now = new Date();
       const cooldownDate = new Date(cooldownUntil);
       return now < cooldownDate;
-    } catch (error) {
+    } catch {
       console.error("Invalid cooldownUntil date:", cooldownUntil);
       return false;
     }
-  }, [cooldownUntil]); 
+  }, [cooldownUntil]);
 
+  // 4. Derived constants
   const reachedMaxAttempts = playedTracksCount >= MAX_DAILY_ATTEMPTS;
-  const allTracksGuessed = guessedTracks.size >= MAX_DAILY_ATTEMPTS;  
-  
+  const allTracksGuessed = guessedTracks.size >= MAX_DAILY_ATTEMPTS;
+  const maxMemorySize = 20;
+
+  // Helper functions
+  const formatCountdown = (date: Date | null) => {
+    if (!date) return "00:00:00";
+    
+    const now = new Date();
+    const diff = date.getTime() - now.getTime();
+
+    if (diff <= 0) return "00:00:00";
+
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+    return `${hours.toString().padStart(2, '0')}:${minutes
+      .toString()
+      .padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+  };
+
+  const formatTime = (ms: number) => {
+    const seconds = ms / 1000;
+    return seconds < 1 ? seconds.toFixed(1) : Math.floor(seconds).toString();
+  };
+
+  // 5. All useEffect hooks in stable order
   useEffect(() => {
     const checkDateChange = () => {
       const today = new Date().toLocaleDateString();
@@ -104,84 +127,8 @@ export default function Home() {
       }
       setLastPlayedDate(today);
     };
-
     checkDateChange();
   }, [lastPlayedDate]);
-
-  useEffect(() => {
-    const savedGuesses = localStorage.getItem('guessedTracks');
-    if (savedGuesses) {
-      setGuessedTracks(new Set(JSON.parse(savedGuesses)));
-    }
-
-    async function loadTracks() {
-      try {
-        const res = await fetch("/api/spotify");
-        if (!res.ok) throw new Error("Greška pri dohvaćanju pjesama.");
-        const data = await res.json();
-        
-        if (data.error) {
-          throw new Error(data.error);
-        }
-
-        const tracksData = Array.isArray(data) ? data : data.tracks;
-        const cooldown = data.cooldownUntil || null;
-        const day = data.day || null;
-
-        if (!Array.isArray(tracksData)) {
-          throw new Error("Neispravan format pjesama.");
-        }
-        if (tracksData.length === 0) {
-          throw new Error("Nema pjesama za reprodukciju.");
-        }
-
-        setTracks(tracksData);
-        setCooldownUntil(cooldown);
-        setCurrentDay(day);
-        setCurrentIndex(0);
-        setGuessAttempt(0);
-        setLoading(false);
-      } catch (error: unknown) {
-        if (error instanceof Error) {
-          setError(error.message);
-        } else {
-          setError("Greška.");
-        }
-        setLoading(false);
-      }
-    }
-    loadTracks();
-  }, []);  
-
-    // Postavi glasnoću kada se promijeni
-  useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.volume = volume;
-    }
-  }, [volume]);
-
-// Dodajte u glavni useEffect
-useEffect(() => {
-  const interval = setInterval(() => {
-    const now = new Date();
-    if (cooldownUntil && now >= new Date(cooldownUntil)) {
-      setCooldownUntil(null);
-      setPlayedTracksCount(0);
-      setGuessedTracks(new Set());
-    }
-  }, 60000); // Provjeravaj svake minute
-
-  return () => clearInterval(interval);
-}, [cooldownUntil]);
-
-// Dodajte ovaj useEffect za resetovanje
-useEffect(() => {
-  if (shouldReset) {
-    // Ponovno učitajte pjesme
-    loadTracks();
-    setShouldReset(false);
-  }
-}, [shouldReset]);
 
   useEffect(() => {
     const savedGuesses = localStorage.getItem('guessedTracks');
@@ -233,39 +180,41 @@ useEffect(() => {
   }, [guessedTracks]);
 
   useEffect(() => {
-    if (!cooldownUntil) {
-      setCountdown(null);
-      return;
+    if (audioRef.current) {
+      audioRef.current.volume = volume;
     }
-    const cooldownDate = new Date(cooldownUntil);
-    if (new Date() >= cooldownDate) {
+  }, [volume]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const now = new Date();
+      if (cooldownUntil && now >= new Date(cooldownUntil)) {
+        setCooldownUntil(null);
+        setPlayedTracksCount(0);
+        setGuessedTracks(new Set());
+      }
+    }, 60000);
+    return () => clearInterval(interval);
+  }, [cooldownUntil]);
+
+  useEffect(() => {
+    if (!cooldownUntil) {
       setCountdown(null);
       return;
     }
 
     const updateCountdown = () => {
-      const now = new Date();
-      const diff = cooldownDate.getTime() - now.getTime();
-
-      if (diff <= 0) {
-        setCountdown(null);
-        return;
+      try {
+        const cooldownDate = new Date(cooldownUntil);
+        setCountdown(formatCountdown(cooldownDate));
+      } catch (error) {
+        console.error("Invalid cooldown date:", cooldownUntil);
+        setCountdown("00:00:00");
       }
-
-      const hours = Math.floor(diff / (1000 * 60 * 60));
-      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-
-      setCountdown(
-        `${hours.toString().padStart(2, '0')}:${minutes
-          .toString()
-          .padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
-      );
     };
 
     updateCountdown();
     const timer = setInterval(updateCountdown, 1000);
-
     return () => clearInterval(timer);
   }, [cooldownUntil]);
 
@@ -338,6 +287,7 @@ useEffect(() => {
     };
   }, [currentIndex, guessAttempt, tracks]);
 
+  // Component functions
   const togglePlay = () => {
     if (!audioRef.current) return;
 
@@ -385,7 +335,6 @@ useEffect(() => {
     }
   };
 
-
   const checkGuess = () => {
     const currentTrack = tracks[currentIndex];
     if (!currentTrack) {
@@ -424,6 +373,7 @@ useEffect(() => {
 
     shakeInput();
   };
+
 
   const handleCorrectGuess = (currentTrack: Track) => {
     setIsCorrect(true);
@@ -513,36 +463,28 @@ useEffect(() => {
   if (error) return <p className="text-red-500">Greška: {error}</p>;
   if (tracks.length === 0) return <p className="text-gray-600">Nema dostupnih pjesama.</p>;
 
-  if (isCooldownActive && allTracksGuessed) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-tr from-green-600 via-emerald-600 to-teal-600 text-white p-8 rounded-lg shadow-xl max-w-md mx-auto text-center">
-        <h1 className="text-4xl font-extrabold mb-6 drop-shadow-lg">KVIZ BALKANSKE MUZIKE</h1>
-        <div className="cooldown-message space-y-4">
-          <p className="text-2xl font-semibold">To je to za danas!</p>
-          <p className="text-lg">Pogodili ste svih 5 pjesama! 🎉</p>
-          <p className="text-lg">Novi set od 5 pjesama biti će dostupan:</p>
-          <p className="cooldown-time text-xl font-mono font-bold bg-white text-green-700 rounded-md px-6 py-3 shadow-md">
-            {countdown || "00:00:00"}
-          </p>
-        </div>
-      </div>
-    );
-  }
 
-  if (isCooldownActive && reachedMaxAttempts) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-r from-purple-700 via-indigo-700 to-blue-700 text-white p-8 rounded-lg shadow-xl max-w-md mx-auto">
-        <h1 className="text-4xl font-extrabold mb-4 drop-shadow-lg">KVIZ BALKANSKE MUZIKE</h1>
-        {currentDay && <p className="mb-6 text-lg italic opacity-80">Današnji dan: {currentDay}</p>}
-        <p className="text-center text-xl font-semibold mb-2">Iskoristili ste svih 5 pokušaja za danas.</p>
-        <p className="text-center mb-2">Pogodili ste {guessedTracks.size} od 5 pjesama.</p>
-        <p className="text-center mb-4">Sljedeći pokušaji bit će dostupni za:</p>
-        <p className="countdown-timer text-3xl font-mono font-bold bg-white text-purple-800 rounded-md px-6 py-3 shadow-lg animate-pulse">
-          {countdown || "00:00:00"}
-        </p>
-      </div>
-    );
-  }
+
+if (isCooldownActive && reachedMaxAttempts) {
+  return (
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-r from-purple-700 via-indigo-700 to-blue-700 text-white p-8 rounded-lg shadow-xl max-w-md mx-auto">
+      <h1 className="text-4xl font-extrabold mb-4 drop-shadow-lg">KVIZ BALKANSKE MUZIKE</h1>
+      {currentDay && <p className="mb-6 text-lg italic opacity-80">Današnji dan: {currentDay}</p>}
+      {tracks.length > 0 && (
+        <audio ref={audioRef} style={{ display: "none" }} controls>
+          <source src={tracks[currentIndex]?.preview_url || ''} type="audio/mpeg" />
+          Tvoj browser ne podržava audio element.
+        </audio>
+      )}
+      <p className="text-center text-xl font-semibold mb-2">Iskoristili ste svih 5 pokušaja za danas.</p>
+      <p className="text-center mb-2">Pogodili ste {guessedTracks.size} od 5 pjesama.</p>
+      <p className="text-center mb-4">Sljedeći pokušaji bit će dostupni za:</p>
+      <p className="countdown-timer text-3xl font-mono font-bold bg-white text-purple-800 rounded-md px-6 py-3 shadow-lg animate-pulse">
+        {countdown || "učitavanje..."}
+      </p>
+    </div>
+  );
+}
 
 
 /*if (isCooldownActive && guessedTracks.size >= 5) {
@@ -587,49 +529,6 @@ useEffect(() => {
       ? Math.min((elapsedTime / ATTEMPT_DURATIONS[guessAttempt]) * 100, 100)
       : 0;
 
-  const formatTime = (ms: number) => {
-    const seconds = ms / 1000;
-    return seconds < 1 ? seconds.toFixed(1) : Math.floor(seconds).toString();
-  };
-
-  const formatCountdown = (date: Date | null) => {
-    if (!date) return "00:00:00";
-    
-    const now = new Date();
-    const diff = date.getTime() - now.getTime();
-
-    if (diff <= 0) return "00:00:00";
-
-    const hours = Math.floor(diff / (1000 * 60 * 60));
-    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-    const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-
-    return `${hours.toString().padStart(2, '0')}:${minutes
-      .toString()
-      .padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-  };  
-
-  useEffect(() => {
-    if (!cooldownUntil) {
-      setCountdown(null);
-      return;
-    }
-
-    const updateCountdown = () => {
-      try {
-        const cooldownDate = new Date(cooldownUntil);
-        setCountdown(formatCountdown(cooldownDate));
-      } catch (error) {
-        console.error("Invalid cooldown date:", cooldownUntil);
-        setCountdown("00:00:00");
-      }
-    };
-
-    updateCountdown();
-    const timer = setInterval(updateCountdown, 1000);
-
-    return () => clearInterval(timer);
-  }, [cooldownUntil]);  
 
 let suggestions: string[] = [];
 if (userGuess.length >= 1) {
@@ -668,8 +567,8 @@ if (userGuess.length >= 1) {
   suggestions = suggestions.slice(0, 5);
 }
 
-  const handleVolumeChange = (error: React.ChangeEvent<HTMLInputElement>) => {
-  const newVolume = parseFloat(error.target.value);
+  const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const newVolume = parseFloat(e.target.value);
   setVolume(newVolume);
   if (audioRef.current) {
     audioRef.current.volume = newVolume;
@@ -725,8 +624,8 @@ return (
             <input
               type="text"
               value={userGuess}
-              onChange={(error) => {
-                setUserGuess(error.target.value);
+              onChange={(e) => {
+                setUserGuess(e.target.value);
                 setShowSuggestions(true);
               }}
               placeholder="Znaš pjesmu? Upisi naziv izvođača i pjesme"
@@ -1209,8 +1108,4 @@ return (
       `}</style>
     </>
   );
-}
-
-function loadTracks() {
-  throw new Error("Function not implemented.");
 }

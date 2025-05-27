@@ -3,53 +3,53 @@ import { NextResponse } from "next/server";
 // Definirani izvođači i pjesme po danima
 const WEEKLY_TRACKS = {
   ponedjeljak: [
-    { artist: "Breskvica", title: "Sava i Dunav" },
-{ artist: "Jala Brat", title: "Klinka" },
-{ artist: "Mia Borisavljević", title: "Nisi svestan" },
-{ artist: "Relja Popović", title: "Samo jako" },
-{ artist: "Teodora", title: "Drama" }
+    { artist: "Severina", title: "Daleko ti kuća" },
+    { artist: "Dino Merlin", title: "Hotel Nacional" },
+    { artist: "Zdravko Čolić", title: "Manijači" },
+    { artist: "Nina Badrić", title: "Rekao si" },
+    { artist: "Prljavo Kazalište", title: "Mojoj majci" }
   ],
   utorak: [
-    { artist: "Voyage", title: "Pleši" },
-{ artist: "Rasta", title: "Adio Amore" },
-{ artist: "Milica Pavlović", title: "Provereno" },
-{ artist: "Sara Jo", title: "Zar ne" },
-{ artist: "Nucci", title: "Crno oko" }
+    { artist: "Tony Cetinski", title: "Kao u snu" },
+    { artist: "Jelena Rozga", title: "Bižuterija" },
+    { artist: "Hari Mata Hari", title: "Lejla" },
+    { artist: "Željko Joksimović", title: "Ljubavi" },
+    { artist: "Magazin", title: "Ginem" }
   ],
   srijeda: [
-    { artist: "Senidah", title: "Beli svemir" },
-{ artist: "Coby", title: "Rambo" },
-{ artist: "Anastasija", title: "Savršen par" },
-{ artist: "Maya Berović", title: "Leti" },
-{ artist: "MC Stojan", title: "Salji broj" }
+    { artist: "Bajaga", title: "Moji drugovi" },
+    { artist: "Colonia", title: "Sexy body" },
+    { artist: "Marija Šerifović", title: "Pametna i luda" },
+    { artist: "Gibonni", title: "Mirakul" },
+    { artist: "Lexington Band", title: "Donesi" }
   ],
   četvrtak: [
-    { artist: "Teya Dora", title: "Džanum" },
-{ artist: "Emrah Emšo", title: "Jedina" },
-{ artist: "Aleksandra Prijović", title: "Devet života" },
-{ artist: "Aca Lukas", title: "Licem u lice" },
-{ artist: "Inas", title: "Karmin" }
+    { artist: "Željko Samardžić", title: "Sipajte mi još jedan viski" },
+    { artist: "Van Gogh", title: "Neko te ima" },
+    { artist: "Crvena Jabuka", title: "Tamo gdje ljubav počinje" },
+    { artist: "Lepa Brena", title: "Luda za tobom" },
+    { artist: "Halid Bešlić", title: "Miljacka" }
   ],
   petak: [
-    { artist: "Edita", title: "Slobodno me rani" },
-{ artist: "Sloba Radanović", title: "Zauvek" },
-{ artist: "Igor Garnier", title: "We Let It Go" },
-{ artist: "Zera", title: "Do zore" },
-{ artist: "Tanja Savić", title: "Suknjica" }
+    { artist: "Maja Berović", title: "Zvezde" },
+    { artist: "Saša Kovačević", title: "Temperatura" },
+    { artist: "Aleksandra Radović", title: "Čuvaj moje srce" },
+    { artist: "Petar Grašo", title: "Ako te pitaju" },
+    { artist: "Plavi orkestar", title: "Suada" }
   ],
   subota: [
-    { artist: "Miach", title: "Anđeo" },
-    { artist: "Grše", title: "Forza" },
-    { artist: "Elma", title: "Ah, Tugo, Tugo" },
-    { artist: "Darko Lazić", title: "Idi Drugome" },
-    { artist: "Devito", title: "Svemir" }
+    { artist: "Neda Ukraden", title: "Zora je" },
+    { artist: "Željko Bebek", title: "Da je sreće bilo" },
+    { artist: "Ana Nikolić", title: "Romale romali" },
+    { artist: "Joksimović & Dino Merlin", title: "Supermen" },
+    { artist: "Tropico Band", title: "Zauvek tvoj" }
   ],
   nedjelja: [
-    { artist: "Đogani", title: "Idemo na sve" },
-{ artist: "Luna Đogani", title: "Deveti krug" },
-{ artist: "Bojan Tomović", title: "Puklo srce" },
-{ artist: "Nikolija", title: "Loš momak" },
-{ artist: "Bojana Vunturišević", title: "Money" }
+    { artist: "Riblja Čorba", title: "Lutka sa naslovne strane" },
+    { artist: "Al Dino", title: "Kopriva" },
+    { artist: "Indira Radić", title: "Lopov" },
+    { artist: "Dženan Lončarević", title: "Nikome ni reč" },
+    { artist: "Miligram", title: "Vrati mi se nesrećo" }
   ]
 };
 

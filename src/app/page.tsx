@@ -204,14 +204,15 @@ export default function Home() {
     }
 
     const updateCountdown = () => {
-      try {
-        const cooldownDate = new Date(cooldownUntil);
-        setCountdown(formatCountdown(cooldownDate));
-      } catch (error) {
-        console.error("Invalid cooldown date:", cooldownUntil);
-        setCountdown("00:00:00");
-      }
-    };
+  try {
+    const cooldownDate = new Date(cooldownUntil);
+    setCountdown(formatCountdown(cooldownDate));
+  } catch (error) {
+    console.error("Invalid cooldown date:", cooldownUntil, error);
+    setCountdown("00:00:00");
+  }
+};
+
 
     updateCountdown();
     const timer = setInterval(updateCountdown, 1000);

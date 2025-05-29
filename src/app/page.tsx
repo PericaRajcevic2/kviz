@@ -114,66 +114,86 @@ export default function Home() {
     const seconds = ms / 1000;
     return seconds < 1 ? seconds.toFixed(1) : Math.floor(seconds).toString();
   };
+  useEffect(() => {
+  if (playedTracksCount > 0) {
+    localStorage.setItem('guessedTracks', JSON.stringify([...guessedTracks]));
+  }
+}, [playedTracksCount, guessedTracks]);
+
 
   // 5. All useEffect hooks in stable order
-  useEffect(() => {
-    const checkDateChange = () => {
-      const today = new Date().toLocaleDateString();
-      if (lastPlayedDate && lastPlayedDate !== today) {
-        localStorage.removeItem('guessedTracks');
-        setGuessedTracks(new Set());
-        setPlayedTracksCount(0);
-        setCooldownUntil(null);
-      }
-      setLastPlayedDate(today);
-    };
-    checkDateChange();
-  }, [lastPlayedDate]);
-
-  useEffect(() => {
-    const savedGuesses = localStorage.getItem('guessedTracks');
-    if (savedGuesses) {
-      setGuessedTracks(new Set(JSON.parse(savedGuesses)));
+useEffect(() => {
+  const checkDateChange = () => {
+    const today = new Date().toLocaleDateString();
+    const savedDate = localStorage.getItem('lastPlayedDate');
+    
+    // Ako je novi dan ili nema spremljenog datuma
+    if (!savedDate || (savedDate && savedDate !== today)) {
+      localStorage.removeItem('guessedTracks');
+      setGuessedTracks(new Set());
+      setPlayedTracksCount(0); // Resetujemo brojač pogodaka
+      setCooldownUntil(null);
+      setCurrentIndex(0);
+      setGuessAttempt(0);
+      setUserGuess("");
+      setIsCorrect(false);
+      
+      // Spremimo današnji datum
+      localStorage.setItem('lastPlayedDate', today);
     }
+    setLastPlayedDate(today);
+  };
 
-    async function loadTracks() {
-      try {
-        const res = await fetch("/api/spotify");
-        if (!res.ok) throw new Error("Greška pri dohvaćanju pjesama.");
-        const data = await res.json();
-        
-        if (data.error) {
-          throw new Error(data.error);
-        }
+  checkDateChange();
+}, [lastPlayedDate]);
 
-        const tracksData = Array.isArray(data) ? data : data.tracks;
-        const cooldown = data.cooldownUntil || null;
-        const day = data.day || null;
+useEffect(() => {
+  const savedGuesses = localStorage.getItem('guessedTracks');
+  const savedDate = localStorage.getItem('lastPlayedDate');
+  const today = new Date().toLocaleDateString();
 
-        if (!Array.isArray(tracksData)) {
-          throw new Error("Neispravan format pjesama.");
-        }
-        if (tracksData.length === 0) {
-          throw new Error("Nema pjesama za reprodukciju.");
-        }
+  if (savedGuesses && savedDate === today) {
+    const parsedGuesses = JSON.parse(savedGuesses);
+    setGuessedTracks(new Set(parsedGuesses));
+    setPlayedTracksCount(parsedGuesses.length); // Postavimo brojač na broj spremljenih pogodaka
+  }
 
-        setTracks(tracksData);
-        setCooldownUntil(cooldown);
-        setCurrentDay(day);
-        setCurrentIndex(0);
-        setGuessAttempt(0);
-        setLoading(false);
-      } catch (error: unknown) {
-        if (error instanceof Error) {
-          setError(error.message);
-        } else {
-          setError("Greška.");
-        }
-        setLoading(false);
+  async function loadTracks() {
+    try {
+      const res = await fetch("/api/spotify");
+      if (!res.ok) throw new Error("Greška pri dohvaćanju pjesama.");
+      const data = await res.json();
+      
+      if (data.error) {
+        throw new Error(data.error);
       }
+
+      const tracksData = Array.isArray(data) ? data : data.tracks;
+      const cooldown = data.cooldownUntil || null;
+      const day = data.day || null;
+
+      if (!Array.isArray(tracksData)) {
+        throw new Error("Neispravan format pjesama.");
+      }
+      if (tracksData.length === 0) {
+        throw new Error("Nema pjesama za reprodukciju.");
+      }
+
+      setTracks(tracksData);
+      setCooldownUntil(cooldown);
+      setCurrentDay(day);
+      setLoading(false);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        setError(error.message);
+      } else {
+        setError("Greška.");
+      }
+      setLoading(false);
     }
-    loadTracks();
-  }, []);
+  }
+  loadTracks();
+}, []);
 
   useEffect(() => {
     localStorage.setItem('guessedTracks', JSON.stringify([...guessedTracks]));
@@ -376,21 +396,23 @@ export default function Home() {
   };
 
 
-  const handleCorrectGuess = (currentTrack: Track) => {
-    setIsCorrect(true);
-    setGuessedTracks(prev => {
-      const newSet = new Set(prev);
-      newSet.add(`${currentTrack.artist} - ${currentTrack.name}`);
-      return newSet;
-    });
-    
-    if (audioRef.current) {
-      audioRef.current.pause();
-      setIsPlaying(false);
-    }
-    if (playTimeout.current) clearTimeout(playTimeout.current);
-    if (intervalTimer.current) clearInterval(intervalTimer.current);
-  };
+const handleCorrectGuess = (currentTrack: Track) => {
+  setIsCorrect(true);
+  setGuessedTracks(prev => {
+    const newSet = new Set(prev);
+    newSet.add(`${currentTrack.artist} - ${currentTrack.name}`);
+    // Spremimo broj pogodaka u stanje
+    setPlayedTracksCount(newSet.size);
+    return newSet;
+  });
+  
+  if (audioRef.current) {
+    audioRef.current.pause();
+    setIsPlaying(false);
+  }
+  if (playTimeout.current) clearTimeout(playTimeout.current);
+  if (intervalTimer.current) clearInterval(intervalTimer.current);
+};
 
   const shakeInput = () => {
     setShake(true);
@@ -478,7 +500,7 @@ if (isCooldownActive && reachedMaxAttempts) {
         </audio>
       )}
       <p className="text-center text-xl font-semibold mb-2">Iskoristili ste svih 5 pokušaja za danas.</p>
-      <p className="text-center mb-2">Pogodili ste {guessedTracks.size} od 5 pjesama.</p>
+      <p className="text-center mb-2">Pogodili ste {playedTracksCount} od 5 pjesama.</p>
       <p className="text-center mb-4">Sljedeći pokušaji bit će dostupni za:</p>
       <p className="countdown-timer text-3xl font-mono font-bold bg-white text-purple-800 rounded-md px-6 py-3 shadow-lg animate-pulse">
         {countdown || "učitavanje..."}
@@ -695,7 +717,7 @@ return (
             <h2>{currentTrack.name}</h2>
             <p>Izvođač: {currentTrack.artist}</p>
             <p className="guessed-count">
-              Pogodjeno {guessedTracks.size} od {tracks.length} pjesama
+            Pogođeno {playedTracksCount} od {MAX_DAILY_ATTEMPTS} pjesama
             </p>
           </div>
 

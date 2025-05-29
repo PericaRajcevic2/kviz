@@ -72,10 +72,10 @@ export default function Home() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const playTimeout = useRef<NodeJS.Timeout | null>(null);
   const intervalTimer = useRef<NodeJS.Timeout | null>(null);
-  const usedTracksRef = useRef<Set<string>>(new Set());
+  //const usedTracksRef = useRef<Set<string>>(new Set());
 
   // 3. useMemo hooks
-  const isCooldownActive = useMemo(() => {
+  /*const isCooldownActive = useMemo(() => {
     if (!cooldownUntil) return false;
     try {
       const now = new Date();
@@ -86,11 +86,13 @@ export default function Home() {
       return false;
     }
   }, [cooldownUntil]);
+*/
+
 
   // 4. Derived constants
-  const reachedMaxAttempts = playedTracksCount >= MAX_DAILY_ATTEMPTS;
+  //const reachedMaxAttempts = playedTracksCount >= MAX_DAILY_ATTEMPTS;
   //const allTracksGuessed = guessedTracks.size >= MAX_DAILY_ATTEMPTS;
-  const maxMemorySize = 20;
+  //const maxMemorySize = 20;
 
   // Helper functions
   const formatCountdown = (date: Date | null) => {

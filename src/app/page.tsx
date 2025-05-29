@@ -148,15 +148,31 @@ useEffect(() => {
 }, [lastPlayedDate]);
 
 useEffect(() => {
-  const savedGuesses = localStorage.getItem('guessedTracks');
-  const savedDate = localStorage.getItem('lastPlayedDate');
   const today = new Date().toLocaleDateString();
+  const savedDate = localStorage.getItem('lastPlayedDate');
+  const savedGuesses = localStorage.getItem('guessedTracks');
+  const savedPlayedCount = localStorage.getItem('playedTracksCount');
 
-  if (savedGuesses && savedDate === today) {
-    const parsedGuesses = JSON.parse(savedGuesses);
-    setGuessedTracks(new Set(parsedGuesses));
-    setPlayedTracksCount(parsedGuesses.length); // Postavimo brojač na broj spremljenih pogodaka
+  // Resetujemo ako je novi dan
+  if (!savedDate || savedDate !== today) {
+    localStorage.removeItem('guessedTracks');
+    localStorage.removeItem('playedTracksCount');
+    localStorage.setItem('lastPlayedDate', today);
+    setGuessedTracks(new Set());
+    setPlayedTracksCount(0);
+  } else {
+    // Učitavamo spremljeno stanje ako je isti dan
+    if (savedGuesses) {
+      const parsedGuesses = JSON.parse(savedGuesses);
+      setGuessedTracks(new Set(parsedGuesses));
+      // Postavimo brojač na stvarni broj jedinstvenih pogodaka
+      setPlayedTracksCount(parsedGuesses.length);
+    }
+    if (savedPlayedCount) {
+      setPlayedTracksCount(parseInt(savedPlayedCount));
+    }
   }
+
 
   async function loadTracks() {
     try {
@@ -195,9 +211,10 @@ useEffect(() => {
   loadTracks();
 }, []);
 
-  useEffect(() => {
-    localStorage.setItem('guessedTracks', JSON.stringify([...guessedTracks]));
-  }, [guessedTracks]);
+useEffect(() => {
+  localStorage.setItem('guessedTracks', JSON.stringify([...guessedTracks]));
+  localStorage.setItem('playedTracksCount', playedTracksCount.toString());
+}, [guessedTracks, playedTracksCount]);
 
   useEffect(() => {
     if (audioRef.current) {
@@ -401,11 +418,15 @@ const handleCorrectGuess = (currentTrack: Track) => {
   setGuessedTracks(prev => {
     const newSet = new Set(prev);
     newSet.add(`${currentTrack.artist} - ${currentTrack.name}`);
-    // Spremimo broj pogodaka u stanje
-    setPlayedTracksCount(newSet.size);
     return newSet;
   });
   
+  // OVO JE KLJUČNA PROMJENA - ažurirajte brojač samo ako je pjesma nova
+  setPlayedTracksCount(prev => {
+    const newCount = prev + 1;
+    return newCount > MAX_DAILY_ATTEMPTS ? MAX_DAILY_ATTEMPTS : newCount;
+  });
+
   if (audioRef.current) {
     audioRef.current.pause();
     setIsPlaying(false);
@@ -419,44 +440,30 @@ const handleCorrectGuess = (currentTrack: Track) => {
     setTimeout(() => setShake(false), 500);
   };
 
-  const nextTrack = () => {
-    setPlayedTracksCount(prev => prev + 1);
-    
-    if (tracks.length <= 1) return;
+const nextTrack = () => {
+  // Provjerite da li je već dosegnut dnevni limit
+  if (playedTracksCount >= MAX_DAILY_ATTEMPTS) {
+    return;
+  }
 
-    const usedKeys = usedTracksRef.current;
-    const currentKey = `${tracks[currentIndex].artist} - ${tracks[currentIndex].name}`;
+  // Pronađite sljedeću nepogođenu pjesmu
+  const unusedTracks = tracks.filter(
+    (t) => !guessedTracks.has(`${t.artist} - ${t.name}`)
+  );
 
-    usedKeys.add(currentKey);
-    if (usedKeys.size > maxMemorySize) {
-      const first = usedKeys.values().next().value;
-      if (first !== undefined) {
-        usedKeys.delete(first);
-      }
-    }
-
-    const unusedTracks = tracks.filter(
-      (t) => !usedKeys.has(`${t.artist} - ${t.name}`) && 
-             !guessedTracks.has(`${t.artist} - ${t.name}`)
-    );
-
-    let nextTrack;
-    if (unusedTracks.length > 0) {
-      nextTrack = unusedTracks[Math.floor(Math.random() * unusedTracks.length)];
-    } else {
-      usedTracksRef.current = new Set();
-      nextTrack = tracks[Math.floor(Math.random() * tracks.length)];
-    }
-
+  if (unusedTracks.length > 0) {
+    const nextTrack = unusedTracks[Math.floor(Math.random() * unusedTracks.length)];
     const newIndex = tracks.findIndex(
       (t) => t.name === nextTrack.name && t.artist === nextTrack.artist
     );
-
     setCurrentIndex(newIndex);
     setGuessAttempt(0);
     setIsCorrect(false);
-  };
-
+  } else {
+    // Ako su sve pjesme pogodene
+    setPlayedTracksCount(MAX_DAILY_ATTEMPTS);
+  }
+};
   const nextAttempt = () => {
     if (guessAttempt < ATTEMPT_DURATIONS.length - 1) {
       setGuessAttempt(guessAttempt + 1);
@@ -472,43 +479,64 @@ const handleCorrectGuess = (currentTrack: Track) => {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="flex flex-col items-center gap-4">
-          <ClipLoader size={60} color="#3B82F6" />
-          <p className="text-lg text-gray-700">Učitavanje pjesama...</p>
-        </div>
+if (loading) {
+  return (
+    <div className="flex items-center justify-center h-screen">
+      <div className="flex flex-col items-center gap-4">
+        <ClipLoader size={60} color="#3B82F6" />
+        <p className="text-lg text-gray-700">Učitavanje pjesama...</p>
       </div>
-    );
-  }
+    </div>
+  );
+}
 
-  if (error) return <p className="text-red-500">Greška: {error}</p>;
-  if (tracks.length === 0) return <p className="text-gray-600">Nema dostupnih pjesama.</p>;
+if (error) return <p className="text-red-500">Greška: {error}</p>;
+if (tracks.length === 0) return <p className="text-gray-600">Nema dostupnih pjesama.</p>;
 
-
-
-if (isCooldownActive && reachedMaxAttempts) {
+// Ako je korisnik već pogodio sve pjesme danas
+if (playedTracksCount >= MAX_DAILY_ATTEMPTS) {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-r from-purple-700 via-indigo-700 to-blue-700 text-white p-8 rounded-lg shadow-xl max-w-md mx-auto">
       <h1 className="text-4xl font-extrabold mb-4 drop-shadow-lg">KVIZ BALKANSKE MUZIKE</h1>
       {currentDay && <p className="mb-6 text-lg italic opacity-80">Današnji dan: {currentDay}</p>}
-      {tracks.length > 0 && (
-        <audio ref={audioRef} style={{ display: "none" }} controls>
-          <source src={tracks[currentIndex]?.preview_url || ''} type="audio/mpeg" />
-          Tvoj browser ne podržava audio element.
-        </audio>
-      )}
       <p className="text-center text-xl font-semibold mb-2">Iskoristili ste svih 5 pokušaja za danas.</p>
-      <p className="text-center mb-2">Pogodili ste {playedTracksCount} od 5 pjesama.</p>
+      <p className="text-center mb-2">Pogodili ste {guessedTracks.size} od 5 pjesama.</p>
       <p className="text-center mb-4">Sljedeći pokušaji bit će dostupni za:</p>
       <p className="countdown-timer text-3xl font-mono font-bold bg-white text-purple-800 rounded-md px-6 py-3 shadow-lg animate-pulse">
-        {countdown || "učitavanje..."}
+        {countdown || "00:00:00"}
       </p>
     </div>
   );
 }
 
+// Ako je korisnik već pogodio trenutnu pjesmu
+if (guessedTracks.has(`${tracks[currentIndex]?.artist} - ${tracks[currentIndex]?.name}`)) {
+  return (
+    <div className="container">
+      <h1>KVIZ BALKANSKE MUZIKE</h1>
+      {currentDay && <p className="day-info">Današnji dan: {currentDay}</p>}
+      
+      <div className="correct-answer">
+        <Image
+          src={tracks[currentIndex]?.album_image || ''}
+          alt={tracks[currentIndex]?.name || ''}
+          className="album-cover"
+          width={200}
+          height={200}
+          priority
+        />
+        <h2>{tracks[currentIndex]?.name}</h2>
+        <p>Izvođač: {tracks[currentIndex]?.artist}</p>
+        <p className="guessed-count">
+          Pogodjeno {playedTracksCount} od {MAX_DAILY_ATTEMPTS} pjesama
+        </p>
+        <button onClick={nextTrack} className="next-button">
+          Sljedeća pjesma
+        </button>
+      </div>
+    </div>
+  );
+}
 
 /*if (isCooldownActive && guessedTracks.size >= 5) {
   return (

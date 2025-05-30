@@ -3,53 +3,53 @@ import { NextResponse } from "next/server";
 // Definirani izvođači i pjesme po danima
 const WEEKLY_TRACKS = {
   ponedjeljak: [
-    { artist: "Severina", title: "Daleko ti kuća" },
-    { artist: "Dino Merlin", title: "Hotel Nacional" },
-    { artist: "Zdravko Čolić", title: "Manijači" },
-    { artist: "Nina Badrić", title: "Rekao si" },
-    { artist: "Prljavo Kazalište", title: "Mojoj majci" }
+    { artist: "Tatjana Matejaš Tajči", title: "Hajde da ludujemo" },
+    { artist: "Žera & Crvena Jabuka", title: "Bježi kišo s prozora" },
+    { artist: "Bojan Marović", title: "Tebi je lako" },
+    { artist: "Tanja Savić", title: "Gde ljubav putuje" },
+    { artist: "Kaliopi", title: "Crno i belo" }
   ],
   utorak: [
-    { artist: "Tony Cetinski", title: "Kao u snu" },
-    { artist: "Jelena Rozga", title: "Bižuterija" },
-    { artist: "Hari Mata Hari", title: "Lejla" },
-    { artist: "Željko Joksimović", title: "Ljubavi" },
-    { artist: "Magazin", title: "Ginem" }
+    { artist: "Sergej Ćetković", title: "Pogledi u tami" },
+    { artist: "Lana Jurčević", title: "Ludo ljeto" },
+    { artist: "Mile Kitić", title: "Kraljica trotoara" },
+    { artist: "Amel Ćurić", title: "Neizlečivo" },
+    { artist: "Ivana Banfić", title: "Godinama" }
   ],
   srijeda: [
-    { artist: "Bajaga", title: "Moji drugovi" },
-    { artist: "Colonia", title: "Sexy body" },
-    { artist: "Marija Šerifović", title: "Pametna i luda" },
-    { artist: "Gibonni", title: "Mirakul" },
-    { artist: "Lexington Band", title: "Donesi" }
+    { artist: "Danijela Martinović", title: "Zovem te ja" },
+    { artist: "Miroslav Ilić", title: "Voleo sam devojku iz grada" },
+    { artist: "Aleksandra Prijović", title: "Legitimno" },
+    { artist: "Đorđe Balašević", title: "Devojka sa čardaš nogama" },
+    { artist: "Hari Varešanović", title: "Strah me da te volim" }
   ],
   četvrtak: [
-    { artist: "Željko Samardžić", title: "Sipajte mi još jedan viski" },
-    { artist: "Van Gogh", title: "Neko te ima" },
-    { artist: "Crvena Jabuka", title: "Tamo gdje ljubav počinje" },
-    { artist: "Lepa Brena", title: "Luda za tobom" },
-    { artist: "Halid Bešlić", title: "Miljacka" }
+    { artist: "Indira Forza", title: "Dođi" },
+    { artist: "Aca Lukas", title: "Ovo je istina" },
+    { artist: "Danijela Štajnfeld", title: "Nikada" },
+    { artist: "Seka Aleksić", title: "Aspirin" },
+    { artist: "Žanamari", title: "Ljubav" }
   ],
   petak: [
-    { artist: "Maja Berović", title: "Zvezde" },
-    { artist: "Saša Kovačević", title: "Temperatura" },
-    { artist: "Aleksandra Radović", title: "Čuvaj moje srce" },
-    { artist: "Petar Grašo", title: "Ako te pitaju" },
-    { artist: "Plavi orkestar", title: "Suada" }
+    { artist: "Miroslav Škoro", title: "Ne dirajte mi ravnicu" },
+    { artist: "Miach", title: "Iluzija" },
+    { artist: "Boris Novković", title: "U dobru i zlu" },
+    { artist: "Lidija Bačić", title: "Solo" },
+    { artist: "Elitni Odredi", title: "Kao kokain" }
   ],
   subota: [
-    { artist: "Neda Ukraden", title: "Zora je" },
-    { artist: "Željko Bebek", title: "Da je sreće bilo" },
-    { artist: "Ana Nikolić", title: "Romale romali" },
-    { artist: "Joksimović & Dino Merlin", title: "Supermen" },
-    { artist: "Tropico Band", title: "Zauvek tvoj" }
+    { artist: "Meri Cetinić", title: "U prolazu" },
+    { artist: "Balkanika", title: "Nova deca" },
+    { artist: "Tanja Banjanin", title: "Moja stvar" },
+    { artist: "Gazda Paja", title: "Otrovan" },
+    { artist: "Massimo Savić", title: "Iz jednog pogleda" }
   ],
   nedjelja: [
-    { artist: "Riblja Čorba", title: "Lutka sa naslovne strane" },
-    { artist: "Al Dino", title: "Kopriva" },
-    { artist: "Indira Radić", title: "Lopov" },
-    { artist: "Dženan Lončarević", title: "Nikome ni reč" },
-    { artist: "Miligram", title: "Vrati mi se nesrećo" }
+    { artist: "Oliver Dragojević", title: "Pismo moja" },
+    { artist: "Dado Polumenta", title: "Moja srno" },
+    { artist: "Maya Berović", title: "Leti ptico slobodno" },
+    { artist: "Knez", title: "Balkan" },
+    { artist: "Jala Brat", title: "Stari radio" }
   ]
 };
 

@@ -55,7 +55,7 @@ function getCurrentDay() {
 
 // Deterministic shuffle using a seed (date string)
 function seededRandom(seed: number) {
-  let x = Math.sin(seed) * 10000;
+  const x = Math.sin(seed) * 10000;
   return x - Math.floor(x);
 }
 
@@ -129,10 +129,10 @@ export async function GET() {
       day: getCurrentDay(),
       cooldownUntil: new Date(new Date().setHours(24, 0, 0, 0)).toISOString()
     });
-  } catch (e: any) {
+  } catch (e: unknown) {
     console.error("Greška u API pozivu:", e);
     return NextResponse.json(
-      { error: "Došlo je do greške pri dohvatu pjesama.", details: e?.message || e?.toString() },
+      { error: "Došlo je do greške pri dohvatu pjesama.", details: e instanceof Error ? e.message : String(e) },
       { status: 500 }
     );
   }

@@ -27,38 +27,13 @@ const normalizeText = (text: string) => {
     .replace(/[\u0300-\u036f]/g, "");
 };
 
-function randomSample<T>(arr: T[], n: number): T[] {
-  const result: T[] = [];
-  const taken = new Set<number>();
-  while (result.length < n && result.length < arr.length) {
-    const idx = Math.floor(Math.random() * arr.length);
-    if (!taken.has(idx)) {
-      taken.add(idx);
-      result.push(arr[idx]);
-    }
-  }
-  return result;
-}
-
-function startsWithSimilarity(a: string, b: string): number {
-  let i = 0;
-  while (i < a.length && i < b.length && a[i] === b[i]) {
-    i++;
-  }
-  return i / Math.max(a.length, b.length);
-}
-
-// Helper for string similarity
-function similarity(a: string, b: string) {
-  a = a.toLowerCase();
-  b = b.toLowerCase();
-  if (a === b) return 1;
-  let matches = 0;
-  for (let i = 0; i < Math.min(a.length, b.length); i++) {
-    if (a[i] === b[i]) matches++;
-  }
-  return matches / Math.max(a.length, b.length);
-}
+type Suggestion = {
+  displayName: string;
+  name: string;
+  artist: string;
+  image: string;
+  popularity: number;
+};
 
 // Fetch Spotify artist suggestions
 async function fetchSpotifyArtistSuggestions(query: string) {
@@ -101,7 +76,7 @@ export default function Home() {
   const [volume, setVolume] = useState(0.5);
   const [lastPlayedDate, setLastPlayedDate] = useState<string | null>(null);
   const [guessedOrder, setGuessedOrder] = useState<Track[]>([]);
-  const [artistSuggestions, setArtistSuggestions] = useState<any[]>([]);
+  const [artistSuggestions, setArtistSuggestions] = useState<Suggestion[]>([]);
   const [suggestionsLoading, setSuggestionsLoading] = useState(false);
 
   // 2. All useRef hooks next
@@ -1086,7 +1061,7 @@ return (
             >
               <span style={{ display: 'flex', alignItems: 'center', gap: '0.7em' }}>
                 {s.image && (
-                  <img src={s.image} alt="cover" style={{ width: 36, height: 36, borderRadius: 18, objectFit: 'cover', boxShadow: '0 2px 8px #0002' }} />
+                  <Image src={s.image} alt="cover" width={36} height={36} style={{ borderRadius: 18, objectFit: 'cover', boxShadow: '0 2px 8px #0002' }} />
                 )}
                 <span>
                   <b>{s.displayName}</b>

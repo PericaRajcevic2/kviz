@@ -68,7 +68,6 @@ export default function Home() {
   const [isCorrect, setIsCorrect] = useState(false);
   const [guessAttempt, setGuessAttempt] = useState(0);
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const [shake, setShake] = useState(false);
   const [elapsedTime, setElapsedTime] = useState(0);
   const [countdown, setCountdown] = useState<string | null>(null);
   const [playedTracksCount, setPlayedTracksCount] = useState(0);
@@ -431,8 +430,6 @@ useEffect(() => {
       handleCorrectGuess(currentTrack);
       return;
     }
-
-    shakeInput();
   };
 
 const handleCorrectGuess = (currentTrack: Track) => {
@@ -455,11 +452,6 @@ const handleCorrectGuess = (currentTrack: Track) => {
   if (playTimeout.current) clearTimeout(playTimeout.current);
   if (intervalTimer.current) clearInterval(intervalTimer.current);
 };
-
-  const shakeInput = () => {
-    setShake(true);
-    setTimeout(() => setShake(false), 500);
-  };
 
 const nextTrack = () => {
   // Provjerite da li je već dosegnut dnevni limit

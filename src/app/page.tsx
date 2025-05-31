@@ -9,6 +9,7 @@ type Track = {
   artist: string;
   preview_url: string;
   album_image: string;
+  isCorrect?: boolean;
 };
 
 const ATTEMPT_DURATIONS = [1000, 3000, 5000, 10000, 15000, 30000];
@@ -47,6 +48,37 @@ function startsWithSimilarity(a: string, b: string): number {
   return i / Math.max(a.length, b.length);
 }
 
+// Helper for string similarity
+function similarity(a: string, b: string) {
+  a = a.toLowerCase();
+  b = b.toLowerCase();
+  if (a === b) return 1;
+  let matches = 0;
+  for (let i = 0; i < Math.min(a.length, b.length); i++) {
+    if (a[i] === b[i]) matches++;
+  }
+  return matches / Math.max(a.length, b.length);
+}
+
+// Fetch Spotify artist suggestions
+async function fetchSpotifyArtistSuggestions(query: string) {
+  if (!query) return [];
+  try {
+    const res = await fetch(`/api/spotify-search?q=${encodeURIComponent(query)}`);
+    const data = await res.json();
+    
+    if (!res.ok || data.error) {
+      console.error('API error:', data.error || 'Unknown error');
+      return [];
+    }
+    
+    return data.results || [];
+  } catch (error) {
+    console.error('Error fetching suggestions:', error);
+    return [];
+  }
+}
+
 export default function Home() {
   // 1. All useState hooks first
   const [tracks, setTracks] = useState<Track[]>([]);
@@ -65,34 +97,251 @@ export default function Home() {
   const [elapsedTime, setElapsedTime] = useState(0);
   const [countdown, setCountdown] = useState<string | null>(null);
   const [playedTracksCount, setPlayedTracksCount] = useState(0);
+  const [correctGuessesCount, setCorrectGuessesCount] = useState(0);
   const [volume, setVolume] = useState(0.5);
   const [lastPlayedDate, setLastPlayedDate] = useState<string | null>(null);
+  const [guessedOrder, setGuessedOrder] = useState<Track[]>([]);
+  const [artistSuggestions, setArtistSuggestions] = useState<any[]>([]);
+  const [suggestionsLoading, setSuggestionsLoading] = useState(false);
 
   // 2. All useRef hooks next
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const playTimeout = useRef<NodeJS.Timeout | null>(null);
   const intervalTimer = useRef<NodeJS.Timeout | null>(null);
-  //const usedTracksRef = useRef<Set<string>>(new Set());
 
-  // 3. useMemo hooks
-  /*const isCooldownActive = useMemo(() => {
-    if (!cooldownUntil) return false;
-    try {
-      const now = new Date();
-      const cooldownDate = new Date(cooldownUntil);
-      return now < cooldownDate;
-    } catch {
-      console.error("Invalid cooldownUntil date:", cooldownUntil);
-      return false;
+  // 3. All useEffect hooks next
+  useEffect(() => {
+  if (playedTracksCount > 0) {
+    localStorage.setItem('guessedTracks', JSON.stringify([...guessedTracks]));
+  }
+}, [playedTracksCount, guessedTracks]);
+
+useEffect(() => {
+  const checkDateChange = () => {
+    const today = new Date().toLocaleDateString();
+    const savedDate = localStorage.getItem('lastPlayedDate');
+    if (!savedDate || (savedDate && savedDate !== today)) {
+      localStorage.removeItem('guessedTracks');
+      setGuessedTracks(new Set());
+        setPlayedTracksCount(0);
+      setCooldownUntil(null);
+      setCurrentIndex(0);
+      setGuessAttempt(0);
+      setUserGuess("");
+      setIsCorrect(false);
+      localStorage.setItem('lastPlayedDate', today);
     }
+    setLastPlayedDate(today);
+  };
+  checkDateChange();
+}, [lastPlayedDate]);
+
+useEffect(() => {
+  const today = new Date().toLocaleDateString();
+  const savedDate = localStorage.getItem('lastPlayedDate');
+  const savedGuesses = localStorage.getItem('guessedTracks');
+  const savedPlayedCount = localStorage.getItem('playedTracksCount');
+  if (!savedDate || savedDate !== today) {
+    localStorage.removeItem('guessedTracks');
+    localStorage.removeItem('playedTracksCount');
+    localStorage.setItem('lastPlayedDate', today);
+    setGuessedTracks(new Set());
+    setPlayedTracksCount(0);
+  } else {
+    if (savedGuesses) {
+      const parsedGuesses = JSON.parse(savedGuesses);
+      setGuessedTracks(new Set(parsedGuesses));
+      setPlayedTracksCount(parsedGuesses.length);
+    }
+    if (savedPlayedCount) {
+      setPlayedTracksCount(parseInt(savedPlayedCount));
+    }
+  }
+  async function loadTracks() {
+    try {
+      const res = await fetch("/api/spotify");
+      if (!res.ok) throw new Error("Greška pri dohvaćanju pjesama.");
+      const data = await res.json();
+      if (data.error) {
+        throw new Error(data.error);
+      }
+      const tracksData = Array.isArray(data) ? data : data.tracks;
+      const cooldown = data.cooldownUntil || null;
+      const day = data.day || null;
+      if (!Array.isArray(tracksData)) {
+        throw new Error("Neispravan format pjesama.");
+      }
+      if (tracksData.length === 0) {
+        throw new Error("Nema pjesama za reprodukciju.");
+      }
+      setTracks(tracksData);
+      setCooldownUntil(cooldown);
+      setCurrentDay(day);
+      setLoading(false);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        setError(error.message);
+      } else {
+        setError("Greška.");
+      }
+      setLoading(false);
+    }
+  }
+  loadTracks();
+}, []);
+
+useEffect(() => {
+  localStorage.setItem('guessedTracks', JSON.stringify([...guessedTracks]));
+  localStorage.setItem('playedTracksCount', playedTracksCount.toString());
+}, [guessedTracks, playedTracksCount]);
+
+  useEffect(() => {
+    setVolume(0.5);
+    if (audioRef.current) {
+      audioRef.current.volume = 0.5;
+    }
+  }, []);
+
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.volume = volume;
+    }
+  }, [currentIndex, volume]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const now = new Date();
+      if (cooldownUntil && now >= new Date(cooldownUntil)) {
+        setCooldownUntil(null);
+        setPlayedTracksCount(0);
+        setGuessedTracks(new Set());
+      }
+    }, 60000);
+    return () => clearInterval(interval);
   }, [cooldownUntil]);
-*/
 
+  useEffect(() => {
+    if (!cooldownUntil) {
+      setCountdown(null);
+      return;
+    }
+    const updateCountdown = () => {
+  try {
+    const cooldownDate = new Date(cooldownUntil);
+    setCountdown(formatCountdown(cooldownDate));
+  } catch (error) {
+    console.error("Invalid cooldown date:", cooldownUntil, error);
+    setCountdown("00:00:00");
+  }
+};
+    updateCountdown();
+    const timer = setInterval(updateCountdown, 1000);
+    return () => clearInterval(timer);
+  }, [cooldownUntil]);
 
-  // 4. Derived constants
-  //const reachedMaxAttempts = playedTracksCount >= MAX_DAILY_ATTEMPTS;
-  //const allTracksGuessed = guessedTracks.size >= MAX_DAILY_ATTEMPTS;
-  //const maxMemorySize = 20;
+  useEffect(() => {
+    setUserGuess("");
+    setIsCorrect(false);
+    setIsPlaying(false);
+    setElapsedTime(0);
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+      audioRef.current.load();
+    }
+    if (playTimeout.current) {
+      clearTimeout(playTimeout.current);
+      playTimeout.current = null;
+    }
+    if (intervalTimer.current) {
+      clearInterval(intervalTimer.current);
+      intervalTimer.current = null;
+    }
+    if (audioRef.current && tracks.length > 0) {
+      audioRef.current
+        .play()
+        .then(() => {
+          setIsPlaying(true);
+          playTimeout.current = setTimeout(() => {
+            if (audioRef.current) {
+              audioRef.current.pause();
+              setIsPlaying(false);
+            }
+            if (intervalTimer.current) {
+              clearInterval(intervalTimer.current);
+              intervalTimer.current = null;
+            }
+          }, ATTEMPT_DURATIONS[guessAttempt]);
+          intervalTimer.current = setInterval(() => {
+            setElapsedTime((prev) => {
+              const next = prev + 100;
+              if (next >= ATTEMPT_DURATIONS[guessAttempt]) {
+                if (intervalTimer.current) {
+                  clearInterval(intervalTimer.current);
+                  intervalTimer.current = null;
+                }
+                return ATTEMPT_DURATIONS[guessAttempt];
+              }
+              return next;
+            });
+          }, 100);
+        })
+        .catch(() => {
+          setIsPlaying(false);
+        });
+    }
+    return () => {
+      if (playTimeout.current) {
+        clearTimeout(playTimeout.current);
+        playTimeout.current = null;
+      }
+      if (intervalTimer.current) {
+        clearInterval(intervalTimer.current);
+        intervalTimer.current = null;
+      }
+    };
+  }, [currentIndex, guessAttempt, tracks]);
+
+  useEffect(() => {
+    setVolume(0.5);
+    if (audioRef.current) {
+      audioRef.current.volume = 0.5;
+    }
+  }, []);
+
+  // Fetch Spotify artist suggestions on userGuess change
+  useEffect(() => {
+    let ignore = false;
+    if (userGuess.length < 1) {
+      setArtistSuggestions([]);
+      return;
+    }
+    
+    const fetchSuggestions = async () => {
+      setSuggestionsLoading(true);
+      try {
+        const results = await fetchSpotifyArtistSuggestions(userGuess);
+        if (!ignore) {
+          setArtistSuggestions(results);
+        }
+      } catch (error) {
+        console.error('Error in suggestions effect:', error);
+        if (!ignore) {
+          setArtistSuggestions([]);
+        }
+      } finally {
+        if (!ignore) {
+          setSuggestionsLoading(false);
+        }
+      }
+    };
+
+    const timeoutId = setTimeout(fetchSuggestions, 300);
+    return () => {
+      ignore = true;
+      clearTimeout(timeoutId);
+    };
+  }, [userGuess]);
 
   // Helper functions
   const formatCountdown = (date: Date | null) => {
@@ -116,220 +365,15 @@ export default function Home() {
     const seconds = ms / 1000;
     return seconds < 1 ? seconds.toFixed(1) : Math.floor(seconds).toString();
   };
-  useEffect(() => {
-  if (playedTracksCount > 0) {
-    localStorage.setItem('guessedTracks', JSON.stringify([...guessedTracks]));
-  }
-}, [playedTracksCount, guessedTracks]);
-
-
-  // 5. All useEffect hooks in stable order
-useEffect(() => {
-  const checkDateChange = () => {
-    const today = new Date().toLocaleDateString();
-    const savedDate = localStorage.getItem('lastPlayedDate');
-    
-    // Ako je novi dan ili nema spremljenog datuma
-    if (!savedDate || (savedDate && savedDate !== today)) {
-      localStorage.removeItem('guessedTracks');
-      setGuessedTracks(new Set());
-      setPlayedTracksCount(0); // Resetujemo brojač pogodaka
-      setCooldownUntil(null);
-      setCurrentIndex(0);
-      setGuessAttempt(0);
-      setUserGuess("");
-      setIsCorrect(false);
-      
-      // Spremimo današnji datum
-      localStorage.setItem('lastPlayedDate', today);
-    }
-    setLastPlayedDate(today);
-  };
-
-  checkDateChange();
-}, [lastPlayedDate]);
-
-useEffect(() => {
-  const today = new Date().toLocaleDateString();
-  const savedDate = localStorage.getItem('lastPlayedDate');
-  const savedGuesses = localStorage.getItem('guessedTracks');
-  const savedPlayedCount = localStorage.getItem('playedTracksCount');
-
-  // Resetujemo ako je novi dan
-  if (!savedDate || savedDate !== today) {
-    localStorage.removeItem('guessedTracks');
-    localStorage.removeItem('playedTracksCount');
-    localStorage.setItem('lastPlayedDate', today);
-    setGuessedTracks(new Set());
-    setPlayedTracksCount(0);
-  } else {
-    // Učitavamo spremljeno stanje ako je isti dan
-    if (savedGuesses) {
-      const parsedGuesses = JSON.parse(savedGuesses);
-      setGuessedTracks(new Set(parsedGuesses));
-      // Postavimo brojač na stvarni broj jedinstvenih pogodaka
-      setPlayedTracksCount(parsedGuesses.length);
-    }
-    if (savedPlayedCount) {
-      setPlayedTracksCount(parseInt(savedPlayedCount));
-    }
-  }
-
-
-  async function loadTracks() {
-    try {
-      const res = await fetch("/api/spotify");
-      if (!res.ok) throw new Error("Greška pri dohvaćanju pjesama.");
-      const data = await res.json();
-      
-      if (data.error) {
-        throw new Error(data.error);
-      }
-
-      const tracksData = Array.isArray(data) ? data : data.tracks;
-      const cooldown = data.cooldownUntil || null;
-      const day = data.day || null;
-
-      if (!Array.isArray(tracksData)) {
-        throw new Error("Neispravan format pjesama.");
-      }
-      if (tracksData.length === 0) {
-        throw new Error("Nema pjesama za reprodukciju.");
-      }
-
-      setTracks(tracksData);
-      setCooldownUntil(cooldown);
-      setCurrentDay(day);
-      setLoading(false);
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        setError(error.message);
-      } else {
-        setError("Greška.");
-      }
-      setLoading(false);
-    }
-  }
-  loadTracks();
-}, []);
-
-useEffect(() => {
-  localStorage.setItem('guessedTracks', JSON.stringify([...guessedTracks]));
-  localStorage.setItem('playedTracksCount', playedTracksCount.toString());
-}, [guessedTracks, playedTracksCount]);
-
-  useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.volume = volume;
-    }
-  }, [volume]);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const now = new Date();
-      if (cooldownUntil && now >= new Date(cooldownUntil)) {
-        setCooldownUntil(null);
-        setPlayedTracksCount(0);
-        setGuessedTracks(new Set());
-      }
-    }, 60000);
-    return () => clearInterval(interval);
-  }, [cooldownUntil]);
-
-  useEffect(() => {
-    if (!cooldownUntil) {
-      setCountdown(null);
-      return;
-    }
-
-    const updateCountdown = () => {
-  try {
-    const cooldownDate = new Date(cooldownUntil);
-    setCountdown(formatCountdown(cooldownDate));
-  } catch (error) {
-    console.error("Invalid cooldown date:", cooldownUntil, error);
-    setCountdown("00:00:00");
-  }
-};
-
-
-    updateCountdown();
-    const timer = setInterval(updateCountdown, 1000);
-    return () => clearInterval(timer);
-  }, [cooldownUntil]);
-
-  useEffect(() => {
-    setUserGuess("");
-    setIsCorrect(false);
-    setIsPlaying(false);
-    setElapsedTime(0);
-
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current.currentTime = 0;
-      audioRef.current.load();
-    }
-
-    if (playTimeout.current) {
-      clearTimeout(playTimeout.current);
-      playTimeout.current = null;
-    }
-    if (intervalTimer.current) {
-      clearInterval(intervalTimer.current);
-      intervalTimer.current = null;
-    }
-
-    if (audioRef.current && tracks.length > 0) {
-      audioRef.current
-        .play()
-        .then(() => {
-          setIsPlaying(true);
-
-          playTimeout.current = setTimeout(() => {
-            if (audioRef.current) {
-              audioRef.current.pause();
-              setIsPlaying(false);
-            }
-            if (intervalTimer.current) {
-              clearInterval(intervalTimer.current);
-              intervalTimer.current = null;
-            }
-          }, ATTEMPT_DURATIONS[guessAttempt]);
-
-          intervalTimer.current = setInterval(() => {
-            setElapsedTime((prev) => {
-              const next = prev + 100;
-              if (next >= ATTEMPT_DURATIONS[guessAttempt]) {
-                if (intervalTimer.current) {
-                  clearInterval(intervalTimer.current);
-                  intervalTimer.current = null;
-                }
-                return ATTEMPT_DURATIONS[guessAttempt];
-              }
-              return next;
-            });
-          }, 100);
-        })
-        .catch(() => {
-          setIsPlaying(false);
-        });
-    }
-
-    return () => {
-      if (playTimeout.current) {
-        clearTimeout(playTimeout.current);
-        playTimeout.current = null;
-      }
-      if (intervalTimer.current) {
-        clearInterval(intervalTimer.current);
-        intervalTimer.current = null;
-      }
-    };
-  }, [currentIndex, guessAttempt, tracks]);
 
   // Component functions
   const togglePlay = () => {
-    if (!audioRef.current) return;
+    console.log('Current track:', currentTrack);
+    if (!audioRef.current || !currentTrack || !currentTrack.preview_url) {
+      // Auto-skip to next track if no preview
+      nextTrack();
+      return;
+    }
 
     if (isPlaying) {
       audioRef.current.pause();
@@ -369,8 +413,10 @@ useEffect(() => {
             });
           }, 100);
         })
-        .catch(() => {
+        .catch((error) => {
+          console.error("Playback error:", error);
           setIsPlaying(false);
+          alert("Došlo je do greške pri reprodukciji. Pokušajte ponovno.");
         });
     }
   };
@@ -414,7 +460,6 @@ useEffect(() => {
     shakeInput();
   };
 
-
 const handleCorrectGuess = (currentTrack: Track) => {
   setIsCorrect(true);
   setGuessedTracks(prev => {
@@ -422,13 +467,12 @@ const handleCorrectGuess = (currentTrack: Track) => {
     newSet.add(`${currentTrack.artist} - ${currentTrack.name}`);
     return newSet;
   });
-  
-  // OVO JE KLJUČNA PROMJENA - ažurirajte brojač samo ako je pjesma nova
+    setGuessedOrder(prev => [...prev, { ...currentTrack, isCorrect: true }]);
   setPlayedTracksCount(prev => {
     const newCount = prev + 1;
     return newCount > MAX_DAILY_ATTEMPTS ? MAX_DAILY_ATTEMPTS : newCount;
   });
-
+    setCorrectGuessesCount(prev => prev + 1);
   if (audioRef.current) {
     audioRef.current.pause();
     setIsPlaying(false);
@@ -466,12 +510,23 @@ const nextTrack = () => {
     setPlayedTracksCount(MAX_DAILY_ATTEMPTS);
   }
 };
+
   const nextAttempt = () => {
     if (guessAttempt < ATTEMPT_DURATIONS.length - 1) {
       setGuessAttempt(guessAttempt + 1);
     } else {
-      setIsCorrect(true);
-      setPlayedTracksCount(prev => prev + 1);
+      // Mark as incorrect guess and show skipped modal
+      setGuessedTracks(prev => {
+        const newSet = new Set(prev);
+        newSet.add(`${currentTrack.artist} - ${currentTrack.name}`);
+        return newSet;
+      });
+      setGuessedOrder(prev => [...prev, { ...currentTrack, isCorrect: false }]);
+      setPlayedTracksCount(prev => {
+        const newCount = prev + 1;
+        return newCount > MAX_DAILY_ATTEMPTS ? MAX_DAILY_ATTEMPTS : newCount;
+      });
+      setIsCorrect(true); // This will trigger the modal
       if (audioRef.current) {
         audioRef.current.pause();
         setIsPlaying(false);
@@ -498,127 +553,424 @@ if (tracks.length === 0) return <p className="text-gray-600">Nema dostupnih pjes
 // Ako je korisnik već pogodio sve pjesme danas
 if (playedTracksCount >= MAX_DAILY_ATTEMPTS) {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-r from-purple-700 via-indigo-700 to-blue-700 text-white p-8 rounded-lg shadow-xl max-w-md mx-auto">
-      <h1 className="text-4xl font-extrabold mb-4 drop-shadow-lg">KVIZ BALKANSKE MUZIKE</h1>
-      {currentDay && <p className="mb-6 text-lg italic opacity-80">Današnji dan: {currentDay}</p>}
-      <p className="text-center text-xl font-semibold mb-2">Iskoristili ste svih 5 pokušaja za danas.</p>
-      <p className="text-center mb-2">Pogodili ste {guessedTracks.size} od 5 pjesama.</p>
-      <p className="text-center mb-4">Sljedeći pokušaji bit će dostupni za:</p>
-      <p className="countdown-timer text-3xl font-mono font-bold bg-white text-purple-800 rounded-md px-6 py-3 shadow-lg animate-pulse">
-        {countdown || "00:00:00"}
-      </p>
+      <div className="end-screen-bg-fixed">
+        <div className="end-screen-glass-fixed">
+          <div className="trophy-icon">🏆</div>
+          <h1 className="end-title">Čestitamo!</h1>
+          {currentDay && <p className="end-day">Današnji dan: <span>{currentDay}</span></p>}
+          <p className="end-subtitle">Iskoristili ste svih <b>5</b> pokušaja za danas.</p>
+          <p className="end-score">Pogodili ste <span className="end-score-num">{correctGuessesCount}</span> od <span className="end-score-num">5</span> pjesama</p>
+          <div className="end-countdown-section">
+            <p className="end-next-label">Sljedeći pokušaji bit će dostupni za:</p>
+            <div className="end-countdown-timer">{countdown || "00:00:00"}</div>
+          </div>
+          <p className="end-footer">Vidimo se sutra! 🎶 <span className="confetti-emoji">🎉🎊</span></p>
+        </div>
+        <style jsx>{`
+          .end-screen-bg-fixed {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #7f53ac 0%, #657ced 100%);
+            position: relative;
+          }
+          .end-screen-glass-fixed {
+            background: rgba(255,255,255,0.35);
+            border-radius: 2rem;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255,255,255,0.18);
+            padding: 3rem 2.5rem 2.5rem 2.5rem;
+            max-width: 420px;
+            width: 100%;
+            text-align: center;
+            position: relative;
+            z-index: 2;
+          }
+          .trophy-icon {
+            font-size: 3.5rem;
+            margin-bottom: 1.2rem;
+            animation: popIn 0.7s cubic-bezier(.68,-0.55,.27,1.55);
+          }
+          .end-title {
+            font-size: 2.5rem;
+            font-weight: 900;
+            color: #fff;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.18);
+          }
+          .end-day {
+            font-size: 1.1rem;
+            color: #e0e0e0;
+            margin-bottom: 1.2rem;
+          }
+          .end-subtitle {
+            font-size: 1.2rem;
+            color: #fff;
+            margin-bottom: 0.7rem;
+          }
+          .end-score {
+            font-size: 1.4rem;
+            color: #ffd700;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+          }
+          .end-score-num {
+            font-size: 1.7rem;
+            color: #fff;
+            font-weight: 900;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.18);
+          }
+          .end-countdown-section {
+            margin-bottom: 1.5rem;
+          }
+          .end-next-label {
+            color: #fff;
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+          }
+          .end-countdown-timer {
+            font-family: monospace;
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: #fff;
+            background: rgba(0,0,0,0.18);
+            border-radius: 0.7rem;
+            padding: 0.7rem 1.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+            margin: 0 auto 0.5rem auto;
+            display: inline-block;
+            letter-spacing: 2px;
+            animation: pulse 2s infinite;
+          }
+          @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+          }
+          .end-footer {
+            color: #fff;
+            font-size: 1.2rem;
+            margin-top: 1.5rem;
+            opacity: 0.9;
+          }
+          .confetti-emoji {
+            font-size: 1.5rem;
+            margin-left: 0.3rem;
+          }
+          @keyframes popIn {
+            0% { transform: scale(0); }
+            60% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+          }
+        `}</style>
     </div>
   );
 }
 
-// Ako je korisnik već pogodio trenutnu pjesmu
-if (guessedTracks.has(`${tracks[currentIndex]?.artist} - ${tracks[currentIndex]?.name}`)) {
-  return (
-    <div className="container">
-      <h1>KVIZ BALKANSKE MUZIKE</h1>
-      {currentDay && <p className="day-info">Današnji dan: {currentDay}</p>}
-      
-      <div className="correct-answer">
+  const currentTrack = tracks[currentIndex];
+
+  // Show modal if correct answer or skipped
+  if (isCorrect) {
+    console.log("Showing modal for", currentTrack);
+    return (
+      <>
+        <div className="modal-backdrop" onClick={nextTrack}></div>
+        <div className="modal-wrapper">
+          <div className="modal-content">
+            <div className="modal-header">
+              <button className="modal-close" onClick={nextTrack}>×</button>
+            </div>
+            <div className="modal-body">
+              <div className={`success-badge ${guessedOrder[guessedOrder.length - 1]?.isCorrect ? 'correct' : 'skipped'}`}>
+                <span className="checkmark">{guessedOrder[guessedOrder.length - 1]?.isCorrect ? '✓' : '×'}</span>
+              </div>
+              <div className="album-wrapper">
         <Image
-          src={tracks[currentIndex]?.album_image || ''}
-          alt={tracks[currentIndex]?.name || ''}
-          className="album-cover"
+                  src={currentTrack.album_image}
+                  alt={currentTrack.name}
+                  className="album-image"
           width={200}
           height={200}
           priority
         />
-        <h2>{tracks[currentIndex]?.name}</h2>
-        <p>Izvođač: {tracks[currentIndex]?.artist}</p>
-        <p className="guessed-count">
-          Pogodjeno {playedTracksCount} od {MAX_DAILY_ATTEMPTS} pjesama
+              </div>
+              <div className="track-details">
+                <h2 className="track-title">{currentTrack.name}</h2>
+                <p className="artist-name">Izvođač: {currentTrack.artist}</p>
+                <div className="progress-wrapper">
+                  <div className="progress-bar">
+                    <div 
+                      className="progress-fill"
+                      style={{ width: `${(playedTracksCount / MAX_DAILY_ATTEMPTS) * 100}%` }}
+                    ></div>
+                  </div>
+                  <p className="progress-text">
+                    Pogođeno {correctGuessesCount} od {MAX_DAILY_ATTEMPTS} pjesama
         </p>
-        <button onClick={nextTrack} className="next-button">
-          Sljedeća pjesma
+                </div>
+              </div>
+              <button className="next-track-btn" onClick={nextTrack}>
+                {guessedTracks.size >= tracks.length
+                  ? "Čekajte sutrašnje pjesme"
+                  : "Sljedeća pjesma"}
         </button>
       </div>
     </div>
-  );
+        </div>
+        <style jsx>{`
+          .modal-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            animation: fadeIn 0.3s ease-out;
+          }
+
+          .modal-wrapper {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1001;
+            padding: 20px;
+          }
+
+          .modal-content {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            border-radius: 20px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            animation: slideIn 0.3s ease-out;
+            overflow: hidden;
+          }
+
+          .modal-header {
+            padding: 15px;
+            display: flex;
+            justify-content: flex-end;
+          }
+
+          .modal-close {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+          }
+
+          .modal-close:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: rotate(90deg);
 }
 
-/*if (isCooldownActive && guessedTracks.size >= 5) {
-  return (
-  <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-tr from-green-600 via-emerald-600 to-teal-600 text-white p-8 rounded-lg shadow-xl max-w-md mx-auto text-center">
-    <h1 className="text-4xl font-extrabold mb-6 drop-shadow-lg">KVIZ BALKANSKE MUZIKE</h1>
-    <div className="cooldown-message space-y-4">
-      <p className="text-2xl font-semibold">To je to za danas!</p>
-      <p className="text-lg">Pogodili ste svih 5 pjesama! 🎉</p>
-      <p className="text-lg">Novi set od 5 pjesama biti će dostupan:</p>
-      <p className="cooldown-time text-xl font-mono font-bold bg-white text-green-700 rounded-md px-6 py-3 shadow-md">
-        {new Date().getDate() !== new Date(cooldownUntil).getDate() 
-          ? "sutra" 
-          : `danas u ${new Date(cooldownUntil).toLocaleTimeString()}`}
-      </p>
-    </div>
-  </div>
-  );
-}
-*/
+          .modal-body {
+            padding: 20px;
+            text-align: center;
+          }
 
-// Modificirajte prikaz cooldown-a
-/*{isCooldownActive && allTracksGuessed && (
-  <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-tr from-green-600 via-emerald-600 to-teal-600 text-white p-8 rounded-lg shadow-xl max-w-md mx-auto text-center">
-    <h1 className="text-4xl font-extrabold mb-6 drop-shadow-lg">KVIZ BALKANSKE MUZIKE</h1>
-    <div className="cooldown-message space-y-4">
-      <p className="text-2xl font-semibold">To je to za danas!</p>
-      <p className="text-lg">Pogodili ste svih 5 pjesama! 🎉</p>
-      <p className="text-lg">Novi set od 5 pjesama biti će dostupan:</p>
-      <p className="cooldown-time text-xl font-mono font-bold bg-white text-green-700 rounded-md px-6 py-3 shadow-md">
-        {new Date().getDate() !== new Date(cooldownUntil).getDate() 
-          ? "sutra" 
-          : `danas u ${new Date(cooldownUntil).toLocaleTimeString()}`}
-      </p>
-    </div>
-  </div>
-)}
-*/
-  const currentTrack = tracks[currentIndex];
+          .success-badge {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            animation: popIn 0.5s ease-out;
+          }
+          .success-badge.correct {
+            background: #4caf50;
+          }
+          .success-badge.skipped {
+            background: #ff5757;
+          }
+          .checkmark {
+            color: white;
+            font-size: 30px;
+            font-weight: bold;
+          }
+          .album-wrapper {
+            margin: 20px auto;
+            width: 200px;
+            height: 200px;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+            animation: scaleIn 0.5s ease-out;
+          }
+
+          .album-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+          }
+
+          .track-details {
+            margin-top: 20px;
+          }
+
+          .track-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: white;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+          }
+
+          .artist-name {
+            font-size: 16px;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 20px;
+          }
+
+          .progress-wrapper {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+          }
+
+          .progress-bar {
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-bottom: 10px;
+          }
+
+          .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4caf50, #8bc34a);
+            border-radius: 3px;
+            transition: width 0.5s ease-out;
+          }
+
+          .progress-text {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.8);
+          }
+
+          .next-track-btn {
+            background: linear-gradient(135deg, #ff9800, #ff5722);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+          }
+
+          .next-track-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 152, 0, 0.4);
+          }
+
+          @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+          }
+
+          @keyframes slideIn {
+            from {
+              opacity: 0;
+              transform: translateY(20px);
+            }
+            to {
+              opacity: 1;
+              transform: translateY(0);
+            }
+          }
+
+          @keyframes popIn {
+            0% { transform: scale(0); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+          }
+
+          @keyframes scaleIn {
+            from { transform: scale(0.9); }
+            to { transform: scale(1); }
+          }
+        `}</style>
+      </>
+    );
+  }
+
+  // Only show already guessed if isCorrect is false and track is in guessedTracks
+  if (!isCorrect && guessedTracks.has(`${tracks[currentIndex]?.artist} - ${tracks[currentIndex]?.name}`)) {
+    return (
+      <div className="container">
+        <h1 className="animate-fade-in">KVIZ BALKANSKE MUZIKE</h1>
+        {currentDay && (
+          <div className="day-info-container animate-fade-in-delay">
+            <div className="day-info-icon">📅</div>
+            <p className="day-info">Današnji dan: <span className="day-value">{currentDay}</span></p>
+          </div>
+        )}
+        <div className="already-guessed animate-fade-in">
+          <div className="already-guessed-icon">
+            <div className="already-guessed-check">✓</div>
+          </div>
+          <div className="album-container">
+            <div className="album-glow"></div>
+            <Image
+              src={tracks[currentIndex]?.album_image || ''}
+              alt={tracks[currentIndex]?.name || ''}
+              className="album-cover animate-scale"
+              width={200}
+              height={200}
+              priority
+            />
+          </div>
+          <div className="track-info">
+            <h2 className="track-name animate-slide-up">{tracks[currentIndex]?.name}</h2>
+            <p className="artist-name animate-slide-up-delay">
+              <span className="artist-label">Izvođač:</span> {tracks[currentIndex]?.artist}
+            </p>
+            <div className="progress-indicator">
+              <div className="progress-bar-fill animate-progress" style={{ width: `${(playedTracksCount / MAX_DAILY_ATTEMPTS) * 100}%` }}></div>
+              <p className="guessed-count animate-fade-in-delay">
+                Pogođeno <span className="guessed-number">{correctGuessesCount}</span> od <span className="total-number">{MAX_DAILY_ATTEMPTS}</span> pjesama
+              </p>
+            </div>
+          </div>
+          <button onClick={nextTrack} className="next-button animate-bounce">
+            {guessedTracks.size >= tracks.length
+              ? "Čekajte sutrašnje pjesme"
+              : "Sljedeća pjesma"}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   const progressPercent =
     elapsedTime && ATTEMPT_DURATIONS[guessAttempt]
       ? Math.min((elapsedTime / ATTEMPT_DURATIONS[guessAttempt]) * 100, 100)
       : 0;
-
-
-let suggestions: string[] = [];
-if (userGuess.length >= 1) {
-  const guessLower = normalizeText(userGuess);
-  
-  // 1. Napravimo listu svih mogućih pjesama
-  const allPossibleSuggestions = tracks.map(t => `${t.artist} - ${t.name}`);
-  
-  // 2. Izvučemo one koje sadrže upisani tekst
-  const matchingSuggestions = allPossibleSuggestions.filter(s => 
-    normalizeText(s).includes(guessLower)
-  );
-  
-  // 3. Dodamo trenutnu pjesmu ako je sličnost dovoljno velika
-  const currentFull = `${currentTrack.artist} - ${currentTrack.name}`;
-  const currentNormalized = normalizeText(currentFull);
-  const similarity = startsWithSimilarity(currentNormalized, guessLower);
-  
-  if (similarity >= 0.4 && !matchingSuggestions.includes(currentFull)) {
-    matchingSuggestions.push(currentFull);
-  }
-  
-  // 4. Dodamo nekoliko potpuno nasumičnih pjesama (30% šanse)
-  if (Math.random() < 0.3) {
-    const randomTracks = randomSample(
-      allPossibleSuggestions.filter(s => !matchingSuggestions.includes(s)),
-      2
-    );
-    matchingSuggestions.push(...randomTracks);
-  }
-  
-  // 5. Izmiješamo sve prijedloge
-  suggestions = randomSample(matchingSuggestions, 5);
-  
-  // 6. Ako ima previše prijedloga, uzmemo prvih 5
-  suggestions = suggestions.slice(0, 5);
-}
 
   const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
   const newVolume = parseFloat(e.target.value);
@@ -629,52 +981,85 @@ if (userGuess.length >= 1) {
 };
 
 return (
-  <>
-    <div className="container">
-      <h1>KVIZ BALKANSKE MUZIKE</h1>
-      {currentDay && <p className="day-info">Današnji dan: {currentDay}</p>}
-
-      <audio ref={audioRef} style={{ display: "none" }} controls>
-        <source src={currentTrack.preview_url} type="audio/mpeg" />
-        Tvoj browser ne podržava audio element.
-      </audio>
-
-      
-
-      <div className="stage-info">
-        <div className="stage-title">Pokušaj {guessAttempt + 1}</div>
-        <div className="stage-time">{formatTime(elapsedTime)} sekundi</div>
-      </div>
-
-      <div className="progress-container">
-        <div className="progress-labels">
-          <span>0:00</span>
-          <span>0:30</span>
-        </div>
-        <div className="progress-track">
+    <div className="songless-root">
+      <header>
+        <h1><span className="logo-main">KVIZ</span><span className="logo-less"> BALKANSKE MUZIKE</span></h1>
+      </header>
+      <div className="guess-slots">
+        {[...Array(MAX_DAILY_ATTEMPTS)].map((_, i) => (
           <div
-            className="progress-bar"
-            style={{ width: `${progressPercent}%` }}
-          ></div>
-          {ATTEMPT_DURATIONS.map((_, i) => {
-            let status = "";
-            if (i < guessAttempt) status = "skipped";
-            else if (i === guessAttempt) status = "active";
-
-            return (
-              <div key={i} className={`progress-marker ${status}`}>
-                {i + 1}
+            className={`guess-slot${i < guessedOrder.length ? (guessedOrder[i].isCorrect ? ' guessed' : ' incorrect') : ''}${i === guessedOrder.length ? ' current' : ''}`}
+            key={i}
+          >
+            {i < guessedOrder.length && (
+              <span className="slot-label">{guessedOrder[i].artist} - {guessedOrder[i].name}</span>
+            )}
+      </div>
+        ))}
+        </div>
+      <div className="songless-progress-section">
+        <div className="songless-progress-header">
+          <span className="songless-stage-label">Pokušaj {guessAttempt + 1}</span>
+          <span className="songless-stage-time">{formatTime(elapsedTime)} sekundi</span>
               </div>
+        <div className="songless-progress-bar-wrap">
+          <div className="songless-progress-bar-bg">
+            <div className="songless-progress-bar-fill" style={{ width: `${progressPercent}%` }}></div>
+            {/* Checkpoints */}
+            {ATTEMPT_DURATIONS.slice(0, -1).map((ms, i) => {
+              const percent = (ms / ATTEMPT_DURATIONS[ATTEMPT_DURATIONS.length - 1]) * 100;
+              return (
+                <div
+                  key={i}
+                  className={`songless-progress-checkpoint${i === guessAttempt ? ' active' : ''}`}
+                  style={{ left: `calc(${percent}% - 1px)` }}
+                />
             );
           })}
         </div>
+          <div className="songless-progress-times">
+            <span>0:00</span>
+            <span>0:30</span>
       </div>
-
-      {!isCorrect ? (
-        <>
-          <div className="search-container">
-            <div className="search-icon">🔍</div>
+        </div>
+        <button className="play-btn-songless" onClick={() => { console.log('Play clicked, currentTrack:', currentTrack); togglePlay(); }}>
+          <span className="play-icon">
+            {isPlaying ? (
+              // Pause SVG
+              <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="9" y="8" width="6" height="20" rx="2.5" fill="#181a1b"/>
+                <rect x="21" y="8" width="6" height="20" rx="2.5" fill="#181a1b"/>
+              </svg>
+            ) : (
+              // Play SVG
+              <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="18" cy="18" r="18" fill="none"/>
+                <polygon points="13,10 28,18 13,26" fill="#181a1b"/>
+              </svg>
+            )}
+          </span>
+        </button>
+      </div>
+      {currentTrack && currentTrack.preview_url && (
+        <audio
+          ref={audioRef}
+          src={currentTrack.preview_url}
+          controls={false}
+          preload="auto"
+          style={{ display: 'none' }}
+          onError={e => {
+            console.error('Audio error:', e);
+            nextTrack();
+          }}
+        />
+      )}
+      {!currentTrack?.preview_url && (
+        <div className="no-preview-message">Nema dostupne pretpregleda za ovu pjesmu. Preskačem...</div>
+      )}
+      <div className="search-section-songless">
+        <span className="search-icon-songless">🔍</span>
             <input
+          className="search-input-songless"
               type="text"
               value={userGuess}
               onChange={(e) => {
@@ -682,44 +1067,42 @@ return (
                 setShowSuggestions(true);
               }}
               placeholder="Znaš pjesmu? Upisi naziv izvođača i pjesme"
-              className={`search-input ${shake ? "shake" : ""}`}
               autoComplete="off"
             />
-            {showSuggestions && suggestions.length > 0 && (
-              <ul className="suggestions-list">
-                {suggestions.map((s, i) => (
-                  <li
-                    key={i}
-                    className="suggestion-item"
-                    onClick={() => {
-                      setUserGuess(s);
-                      setShowSuggestions(false);
-                    }}
-                  >
-                    {s}
-                  </li>
-                ))}
-              </ul>
-            )}
+      </div>
+      {showSuggestions && (suggestionsLoading || artistSuggestions.length > 0) && (
+        <ul className="suggestions-list-songless">
+          {suggestionsLoading && (
+            <li className="suggestion-item-songless">Učitavanje...</li>
+          )}
+          {artistSuggestions.map((s, i) => (
+            <li
+              key={i}
+              className="suggestion-item-songless"
+              onClick={() => {
+                setUserGuess(s.displayName);
+                setShowSuggestions(false);
+              }}
+            >
+              <span style={{ display: 'flex', alignItems: 'center', gap: '0.7em' }}>
+                {s.image && (
+                  <img src={s.image} alt="cover" style={{ width: 36, height: 36, borderRadius: 18, objectFit: 'cover', boxShadow: '0 2px 8px #0002' }} />
+                )}
+                <span>
+                  <b>{s.displayName}</b>
+                </span>
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
+      <div className="button-row-songless">
+        <button onClick={nextAttempt} className="skip-btn-songless">PRESKOČI</button>
+        <button onClick={checkGuess} className="submit-btn-songless">POTVRDI</button>
           </div>
-
-          <div className="button-group">
-            <button onClick={nextAttempt} className="skip-button">
-              PRESKOČI
-            </button>
-            <button onClick={checkGuess} className="submit-button">
-              POTVRDI
-            </button>
-          </div>
-
-          <button onClick={togglePlay} className="play-button">
-            {isPlaying ? "Pauziraj" : "Pokreni"}
-          </button>
-
-          {/* Dodan slider za glasnoću */}
-        <div className="volume-control mb-6 w-full max-w-md mx-auto">
-          <label htmlFor="volume" className="block text-sm font-semibold text-gray-800 mb-2 select-none">
-            Glasnoća: <span className="text-indigo-600"> {Math.round(volume * 100)}% </span>
+      <div className="volume-control-songless">
+        <label htmlFor="volume" className="volume-label-songless">
+          Glasnoća: <span className="volume-value-songless">{Math.round(volume * 100)}%</span>
           </label>
           <input
             type="range"
@@ -729,436 +1112,311 @@ return (
             step="0.01"
             value={volume}
             onChange={handleVolumeChange}
-            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+          className="volume-slider-songless"
           />
         </div>
-        </>
-      ) : (
-        <>
-          <div className="correct-answer">
-            <Image
-              src={currentTrack.album_image}
-              alt={currentTrack.name}
-              className="album-cover"
-              width={200}
-              height={200}
-              priority
-            />
-            <h2>{currentTrack.name}</h2>
-            <p>Izvođač: {currentTrack.artist}</p>
-            <p className="guessed-count">
-            Pogođeno {playedTracksCount} od {MAX_DAILY_ATTEMPTS} pjesama
-            </p>
-          </div>
-
-          <button onClick={nextTrack} className="next-button">
-            {guessedTracks.size >= tracks.length
-              ? "Čekajte sutrašnje pjesme"
-              : "Sljedeća pjesma"}
-          </button>
-        </>
-      )}
-    </div>
-
-    <main className="flex flex-col min-h-screen items-center justify-between p-8">
-      {/* Glavni sadržaj */}
-      <div className="flex-1 w-full max-w-2xl"></div>
-
-      {/* Footer */}
-      <footer className="w-full text-center text-sm text-gray-500 py-4 mt-8">
+      <main className="songless-footer">
+        <footer className="footer-songless">
         © {new Date().getFullYear()} Perica Rajčević. Sva prava pridržana.
       </footer>
     </main>
-  
-
       <style jsx>{`
-        .container {
-          max-width: 400px;
-          margin: 40px auto;
-          padding: 30px;
-          background: linear-gradient(135deg, #2c3e50, #4ca1af);
-          border-radius: 15px;
-          color: white;
-          font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-          box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+        .songless-root {
+          background: #181a1b;
+          min-height: 100vh;
+          color: #fff;
+          font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+          padding-bottom: 40px;
+        }
+        header h1 {
           text-align: center;
+          font-size: 2.5rem;
+          margin: 2rem 0 1.5rem 0;
+          letter-spacing: 1px;
         }
-
-        h1 {
-          margin-bottom: 30px;
-          font-weight: 700;
-          font-size: 24px;
-        }
-        
-                .day-info {
-          font-size: 14px;
-          margin-bottom: 10px;
-          color: rgba(255, 255, 255, 0.8);
-        }
-
-.cooldown-container {
-  min-height: 100vh;
+        .logo-main { font-weight: 800; }
+        .logo-less { font-weight: 400; color: #bdbdbd; }
+        .guess-slots {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 2rem;
-  max-width: 400px;
-  margin: 0 auto;
-  background: linear-gradient(90deg, #6b21a8, #4338ca, #2563eb); /* ljubičasto-plavi gradient */
-  color: white;
-  border-radius: 12px;
-  box-shadow: 0 10px 25px rgba(101, 31, 255, 0.6);
-  text-align: center;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-}
-
-.cooldown-container h1 {
-  font-size: 2.5rem;
-  font-weight: 800;
-  margin-bottom: 1rem;
-  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.7);
-}
-
-.day-info {
-  font-style: italic;
-  opacity: 0.8;
-  margin-bottom: 1.5rem;
-  font-size: 1.1rem;
-}
-
-.cooldown-container p {
-  font-size: 1.25rem;
-  margin-bottom: 0.8rem;
-}
-
-.countdown-timer {
-  font-family: monospace;
-  font-weight: 700;
-  font-size: 2rem;
-  background: white;
-  color: #7c3aed; /* ljubičasta */
-  padding: 0.75rem 1.5rem;
-  border-radius: 8px;
-  box-shadow: 0 4px 10px rgba(124, 58, 237, 0.5);
-  animation: pulse 2s infinite;
-  display: inline-block;
-}
-
-/* Animacija suptilnog treptanja */
-@keyframes pulse {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.7;
-  }
-}
-
-/* Za cooldown-message u drugom slučaju */
-.cooldown-message {
-  margin-top: 1rem;
-}
-
-.cooldown-message p {
-  font-size: 1.3rem;
-  margin-bottom: 1rem;
-}
-
-.cooldown-time {
-  font-family: monospace;
-  font-weight: 700;
-  font-size: 1.75rem;
-  background: white;
-  color: #22c55e; /* zelena */
-  padding: 0.75rem 1.5rem;
-  border-radius: 8px;
-  box-shadow: 0 4px 10px rgba(34, 197, 94, 0.5);
-  display: inline-block;
-}
-
-        .guessed-count {
-          margin-top: 10px;
-          font-size: 14px;
-          color: rgba(255, 255, 255, 0.7);
+          gap: 1rem;
+          margin: 0 auto 2rem auto;
+          max-width: 600px;
         }
-          
-        .stage-info {
-          margin-bottom: 15px;
-        }
-
-        .stage-title {
-          font-size: 18px;
-          font-weight: 600;
-          margin-bottom: 5px;
-        }
-
-        .stage-time {
-          font-size: 14px;
-          opacity: 0.8;
-        }
-
-        .progress-container {
-          margin-bottom: 25px;
-        }
-
-        .progress-labels {
-          display: flex;
-          justify-content: space-between;
-          font-size: 12px;
-          margin-bottom: 5px;
-        }
-
-        .progress-track {
-          position: relative;
-          height: 20px;
-          background: rgba(255, 255, 255, 0.2);
-          border-radius: 10px;
-          overflow: hidden;
+        .guess-slot {
+          height: 48px;
+          border: 2px solid #333;
+          border-radius: 8px;
+          background: #23272a;
           display: flex;
           align-items: center;
-          justify-content: space-between;
-          padding: 0 10px;
+          padding-left: 1.2rem;
+  font-size: 1.1rem;
+          color: #bdbdbd;
+          transition: border 0.2s, background 0.2s;
+}
+        .guess-slot.guessed {
+          border: 2px solid #6fff57;
+          background: #23272a;
+          color: #fff;
         }
-
-        .progress-bar {
-          position: absolute;
-          top: 0;
-          left: 0;
-          height: 100%;
-          background: rgba(255, 255, 255, 0.5);
-          transition: width 0.1s linear;
+        .guess-slot.incorrect {
+          border: 2px solid #ff5757;
+          background: #23272a;
+          color: #fff;
         }
-
-        .progress-marker {
-          position: relative;
-          z-index: 1;
-          width: 16px;
-          height: 16px;
-          border-radius: 50%;
-          background: rgba(255, 255, 255, 0.3);
-          color: #333;
+        .guess-slot.current {
+          border: 2px solid #fff;
+        }
+        .slot-label {
           font-weight: 600;
-          font-size: 10px;
+        }
+        .songless-progress-section {
+          margin: 2.5rem auto 1.5rem auto;
+          max-width: 700px;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 1.2rem;
+}
+        .songless-progress-header {
+          width: 100%;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+          font-weight: 900;
+          font-size: 1.2rem;
+          color: #6fff57;
+          margin-bottom: 0.2rem;
+          letter-spacing: 0.5px;
+        }
+        .songless-stage-label {
+          font-weight: 900;
+          color: #6fff57;
+          font-size: 1.15rem;
+        }
+        .songless-stage-time {
+  font-weight: 700;
+          color: #b6ffb0;
+          font-size: 1.05rem;
+        }
+        .songless-progress-bar-wrap {
+          width: 100%;
+          max-width: 700px;
+          margin: 0 auto;
+        }
+        .songless-progress-bar-bg {
+          width: 100%;
+          height: 18px;
+          background: #23272a;
+  border-radius: 8px;
+          position: relative;
+          overflow: visible;
+          border: 2px solid #888;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+          margin-bottom: 0.2rem;
+}
+        .songless-progress-bar-fill {
+          height: 100%;
+          background: linear-gradient(90deg, #6fff57, #b6ffb0);
+          border-radius: 8px;
+          transition: width 0.3s cubic-bezier(.4,2,.6,1);
+          position: absolute;
+          left: 0; top: 0;
+          z-index: 1;
+        }
+        .songless-progress-checkpoint {
+          position: absolute;
+          top: -4px;
+          width: 2px;
+          height: 26px;
+          background: #fff;
+          opacity: 0.85;
+          z-index: 3;
+          border-radius: 1px;
+          box-shadow: 0 0 2px #23272a;
+          pointer-events: none;
+          transition: background 0.2s;
+        }
+        .songless-progress-checkpoint.active {
+          background: #6fff57;
+          box-shadow: 0 0 8px #6fff57;
+        }
+        .songless-progress-times {
+          width: 100%;
+          display: flex;
+          justify-content: space-between;
+          font-size: 1.05rem;
+          color: #bdbdbd;
+          font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+          font-weight: 700;
+          margin-top: 0.1rem;
+          letter-spacing: 0.5px;
+        }
+        .play-btn-songless {
+          background: linear-gradient(135deg, #6fff57 60%, #b6ffb0 100%);
+          border: none;
+          border-radius: 50%;
+          width: 60px;
+          height: 60px;
+          color: #181a1b;
           display: flex;
           align-items: center;
           justify-content: center;
-        }
-
-        .progress-marker.skipped {
-          background: #ff4d4d;
-          color: white;
-        }
-
-        .progress-marker.active {
-          background: #4caf50;
-          color: white;
-        }
-
-        .search-container {
-          position: relative;
-          margin-bottom: 20px;
-        }
-
-        .search-icon {
-          position: absolute;
-          left: 10px;
-          top: 50%;
-          transform: translateY(-50%);
-          font-size: 18px;
-        }
-
-        .search-input {
-          width: 100%;
-          padding: 12px 12px 12px 35px;
-          border-radius: 8px;
-          border: none;
-          font-size: 14px;
+          box-shadow: 0 4px 16px rgba(111,255,87,0.18);
+          transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
+          cursor: pointer;
+          margin: 1rem auto 1rem auto;
+          padding: 0;
           outline: none;
-          box-sizing: border-box;
+          position: relative;
         }
-
-        .search-input.shake {
-          animation: shake 0.4s;
-          border: 2px solid #ff3b3b;
+        .play-btn-songless:hover {
+          background: linear-gradient(135deg, #4edb3a 60%, #6fff57 100%);
+          transform: scale(1.08);
+          box-shadow: 0 8px 24px rgba(111,255,87,0.25);
         }
-
-        @keyframes shake {
-          0%, 100% { transform: translateX(0); }
-          25%, 75% { transform: translateX(-6px); }
-          50% { transform: translateX(6px); }
+        .play-icon {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 36px;
+          height: 36px;
+          margin: 0;
+          padding: 0;
         }
-
-        .suggestions-list {
+        .search-section-songless {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          margin: 2rem auto 0 auto;
+          max-width: 600px;
+          background: #23272a;
+          border-radius: 8px;
+          border: 2px solid #333;
+          padding: 0.5rem 1rem;
+        }
+        .search-icon-songless {
+          margin-right: 0.5rem;
+          color: #bdbdbd;
+          font-size: 1.2rem;
+        }
+        .search-input-songless {
+          flex: 1;
+          background: transparent;
+          border: none;
+          color: #fff;
+          font-size: 1.1rem;
+          outline: none;
+          padding: 0.5rem 0;
+        }
+        .suggestions-list-songless {
           position: absolute;
           width: 100%;
-          max-height: 200px;
-          overflow-y: auto;
-          background: white;
+          max-width: 600px;
+          left: 50%;
+          transform: translateX(-50%);
+          background: #23272a;
           border-radius: 8px;
           margin-top: 5px;
           box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
           z-index: 10;
-          color: #333;
+          color: #fff;
           text-align: left;
           padding: 0;
           list-style: none;
         }
-
-        .suggestion-item {
-          padding: 8px 15px;
+        .suggestion-item-songless {
+          padding: 10px 18px;
           cursor: pointer;
+          border-bottom: 1px solid #333;
         }
-
-        .suggestion-item:hover {
-          background: #f0f0f0;
+        .suggestion-item-songless:last-child {
+          border-bottom: none;
         }
-
-        .button-group {
+        .suggestion-item-songless:hover {
+          background: #333;
+        }
+        .button-row-songless {
           display: flex;
-          gap: 10px;
-          margin-bottom: 15px;
+          gap: 1rem;
+          margin: 2rem auto 0 auto;
+          max-width: 600px;
+          justify-content: center;
         }
-
-        button {
-          padding: 12px;
+        .skip-btn-songless {
+          background: #bdbdbd;
+          color: #181a1b;
           border: none;
           border-radius: 8px;
-          font-weight: 600;
+          font-weight: 700;
+          font-size: 1.1rem;
+          padding: 0.7rem 2.2rem;
           cursor: pointer;
-          transition: all 0.2s;
+          transition: background 0.2s;
         }
-
-        .skip-button {
-          flex: 1;
-          background: #e0e0e0;
-          color: #333;
+        .skip-btn-songless:hover {
+          background: #a0a0a0;
         }
-
-        .skip-button:hover {
-          background: #d0d0d0;
-        }
-
-        .submit-button {
-          flex: 1;
-          background: #4caf50;
-          color: white;
-        }
-
-        .submit-button:hover {
-          background: #3e8e41;
-        }
-
-        .play-button {
-          width: 100%;
-          background: #2196f3;
-          color: white;
-          margin-bottom: 0;
-        }
-
-        .play-button:hover {
-          background: #0b7dda;
-        }
-
-        .album-cover {
+        .submit-btn-songless {
+          background: #6fff57;
+          color: #181a1b;
+          border: none;
           border-radius: 8px;
-          margin-bottom: 15px;
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+          font-weight: 700;
+          font-size: 1.1rem;
+          padding: 0.7rem 2.2rem;
+          cursor: pointer;
+          transition: background 0.2s;
         }
-
-        .correct-answer h2 {
-          margin: 10px 0 5px;
-          font-size: 20px;
+        .submit-btn-songless:hover {
+          background: #4edb3a;
         }
-
-        .correct-answer p {
-          margin: 0 0 20px;
-          opacity: 0.8;
+        .volume-control-songless {
+          margin: 2rem auto 0 auto;
+          max-width: 600px;
+          text-align: left;
         }
-
-        .next-button {
+        .volume-label-songless {
+          display: block;
+          font-size: 1rem;
+          color: #bdbdbd;
+          margin-bottom: 0.5rem;
+        }
+        .volume-value-songless {
+          color: #6fff57;
+          font-weight: 700;
+        }
+        .volume-slider-songless {
           width: 100%;
-          background: #ff9800;
-          color: white;
+          accent-color: #6fff57;
+          height: 6px;
+          border-radius: 3px;
+          background: #23272a;
         }
-
-        .next-button:hover {
-          background: #e68a00;
+        .songless-footer {
+          margin-top: 3rem;
         }
-
-        /* Mobilni stilovi */
-        @media (max-width: 768px) {
-          .container {
-            max-width: 95%;
-            margin: 20px auto;
-            padding: 20px;
+        .footer-songless {
+          width: 100%;
+          text-align: center;
+          color: #bdbdbd;
+          font-size: 0.95rem;
+          padding: 2rem 0 0 0;
           }
-
-          h1 {
-            font-size: 22px;
-            margin-bottom: 20px;
+        .no-preview-message {
+          color: #ff9800;
+          text-align: center;
+          margin: 1rem 0;
+          font-weight: 600;
           }
-
-          .progress-track {
-            height: 18px;
-          }
-
-          .progress-marker {
-            width: 14px;
-            height: 14px;
-            font-size: 9px;
-          }
-
-          .search-input {
-            padding: 10px 10px 10px 35px;
-            font-size: 14px;
-          }
-
-          button {
-            padding: 10px;
-            font-size: 14px;
-          }
-
-          .album-cover {
-            width: 180px !important;
-            height: 180px !important;
-          }
-        }
-
-        @media (max-width: 480px) {
-          .container {
-            padding: 15px;
-          }
-
-          h1 {
-            font-size: 20px;
-          }
-
-          .progress-track {
-            height: 16px;
-            padding: 0 8px;
-          }
-
-          .progress-marker {
-            width: 12px;
-            height: 12px;
-            font-size: 8px;
-          }
-
-          .search-input {
-            font-size: 13px;
-          }
-
-          button {
-            padding: 8px;
-          }
-
-          .album-cover {
-            width: 160px !important;
-            height: 160px !important;
+        @media (max-width: 700px) {
+          .guess-slots, .progress-bar-songless, .search-section-songless, .button-row-songless, .volume-control-songless {
+            max-width: 98vw;
           }
         }
       `}</style>
-    </>
+    </div>
   );
 }

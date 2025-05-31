@@ -34,7 +34,6 @@ const BALKAN_TRACKS = [
   { artist: "Zdravko Čolić", title: "Zagrli me" },
   { artist: "Bijelo Dugme", title: "Lična karta" },
   { artist: "Ceca", title: "Nevaljala" },
-  { artist: "Severina", title: "Gas Gas" },
   { artist: "Jelena Rozga", title: "Bižuterija" },
   { artist: "Halid Bešlić", title: "Romanija" },
   { artist: "Seka Aleksić", title: "Sve bih dala" },

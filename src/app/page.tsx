@@ -406,11 +406,28 @@ useEffect(() => {
     const normalizedTrackName = normalizeText(currentTrack.name);
     const normalizedArtist = normalizeText(currentTrack.artist);
 
+    console.log('Debug guess:', {
+      userGuess,
+      normalizedGuess,
+      normalizedTrackName,
+      normalizedArtist,
+      currentTrack
+    });
+
     const parts1 = normalizedGuess.split(" - ").map((p) => p.trim());
     const parts2 = normalizedGuess.split("-").map((p) => p.trim());
     
+    console.log('Debug parts:', { parts1, parts2 });
+    
     if (parts1.length === 2 || parts2.length === 2) {
       const [part1, part2] = parts1.length === 2 ? parts1 : parts2;
+      
+      console.log('Debug comparison:', {
+        part1,
+        part2,
+        matchesArtistFirst: part1 === normalizedArtist && part2 === normalizedTrackName,
+        matchesTrackFirst: part1 === normalizedTrackName && part2 === normalizedArtist
+      });
       
       if (
         (part1 === normalizedArtist && part2 === normalizedTrackName) ||
@@ -420,6 +437,13 @@ useEffect(() => {
         return;
       }
     }
+    
+    console.log('Debug direct matches:', {
+      matchesTrackName: normalizedGuess === normalizedTrackName,
+      matchesArtist: normalizedGuess === normalizedArtist,
+      matchesArtistTrack: normalizedGuess === `${normalizedArtist} ${normalizedTrackName}`,
+      matchesTrackArtist: normalizedGuess === `${normalizedTrackName} ${normalizedArtist}`
+    });
     
     if (
       normalizedGuess === normalizedTrackName ||

@@ -40,6 +40,13 @@ async function getSpotifyAccessToken() {
   }
 }
 
+type SpotifyTrack = {
+  name: string;
+  artists: { name: string }[];
+  album: { images: { url: string }[] };
+  popularity?: number;
+};
+
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
@@ -72,14 +79,14 @@ export async function GET(req: NextRequest) {
     const apiData = await apiRes.json();
     
     // Process and sort tracks by popularity
-    const tracks = (apiData.tracks?.items || [])
-      .filter((item: any) => item.name && item.artists?.[0]?.name) // Filter out invalid entries
-      .sort((a: any, b: any) => (b.popularity || 0) - (a.popularity || 0)) // Sort by popularity
-      .map((item: any) => ({
-        displayName: `${item.name} - ${item.artists?.[0]?.name || ""}`,
+    const tracks = (apiData.tracks?.items as SpotifyTrack[] || [])
+      .filter((item) => item.name && item.artists?.[0]?.name)
+      .sort((a, b) => (b.popularity || 0) - (a.popularity || 0))
+      .map((item) => ({
+        displayName: `${item.name} - ${item.artists[0].name}`,
         name: item.name,
-        artist: item.artists?.[0]?.name || "",
-        image: item.album?.images?.[0]?.url || "",
+        artist: item.artists[0].name,
+        image: item.album.images?.[0]?.url || "",
         popularity: item.popularity || 0
       }));
 

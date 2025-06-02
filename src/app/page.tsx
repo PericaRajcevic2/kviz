@@ -77,11 +77,14 @@ export default function Home() {
   const [guessedOrder, setGuessedOrder] = useState<Track[]>([]);
   const [artistSuggestions, setArtistSuggestions] = useState<Suggestion[]>([]);
   const [suggestionsLoading, setSuggestionsLoading] = useState(false);
+  const [showEndScreen, setShowEndScreen] = useState(true);
+  const [isWrongGuess, setIsWrongGuess] = useState(false);
 
   // 2. All useRef hooks next
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const playTimeout = useRef<NodeJS.Timeout | null>(null);
   const intervalTimer = useRef<NodeJS.Timeout | null>(null);
+  const searchContainerRef = useRef<HTMLDivElement>(null);
 
   // 3. All useEffect hooks next
   useEffect(() => {
@@ -317,6 +320,20 @@ useEffect(() => {
     };
   }, [userGuess]);
 
+  // Add click outside handler
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (searchContainerRef.current && !searchContainerRef.current.contains(event.target as Node)) {
+        setShowSuggestions(false);
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
   // Helper functions
   const formatCountdown = (date: Date | null) => {
     if (!date) return "00:00:00";
@@ -406,28 +423,11 @@ useEffect(() => {
     const normalizedTrackName = normalizeText(currentTrack.name);
     const normalizedArtist = normalizeText(currentTrack.artist);
 
-    console.log('Debug guess:', {
-      userGuess,
-      normalizedGuess,
-      normalizedTrackName,
-      normalizedArtist,
-      currentTrack
-    });
-
     const parts1 = normalizedGuess.split(" - ").map((p) => p.trim());
     const parts2 = normalizedGuess.split("-").map((p) => p.trim());
     
-    console.log('Debug parts:', { parts1, parts2 });
-    
     if (parts1.length === 2 || parts2.length === 2) {
       const [part1, part2] = parts1.length === 2 ? parts1 : parts2;
-      
-      console.log('Debug comparison:', {
-        part1,
-        part2,
-        matchesArtistFirst: part1 === normalizedArtist && part2 === normalizedTrackName,
-        matchesTrackFirst: part1 === normalizedTrackName && part2 === normalizedArtist
-      });
       
       if (
         (part1 === normalizedArtist && part2 === normalizedTrackName) ||
@@ -438,13 +438,6 @@ useEffect(() => {
       }
     }
     
-    console.log('Debug direct matches:', {
-      matchesTrackName: normalizedGuess === normalizedTrackName,
-      matchesArtist: normalizedGuess === normalizedArtist,
-      matchesArtistTrack: normalizedGuess === `${normalizedArtist} ${normalizedTrackName}`,
-      matchesTrackArtist: normalizedGuess === `${normalizedTrackName} ${normalizedArtist}`
-    });
-    
     if (
       normalizedGuess === normalizedTrackName ||
       normalizedGuess === normalizedArtist ||
@@ -454,6 +447,12 @@ useEffect(() => {
       handleCorrectGuess(currentTrack);
       return;
     }
+
+    // Handle wrong guess
+    setIsWrongGuess(true);
+    setTimeout(() => setIsWrongGuess(false), 500); // Reset after animation
+    setUserGuess(""); // Clear the input
+    nextAttempt(); // Move to next attempt instead of next song
   };
 
 const handleCorrectGuess = (currentTrack: Track) => {
@@ -544,119 +543,295 @@ if (tracks.length === 0) return <p className="text-gray-600">Nema dostupnih pjes
 // Ako je korisnik već pogodio sve pjesme danas
 if (playedTracksCount >= MAX_DAILY_ATTEMPTS) {
   return (
-      <div className="end-screen-bg-fixed">
-        <div className="end-screen-glass-fixed">
-          <div className="trophy-icon">🏆</div>
-          <h1 className="end-title">Čestitamo!</h1>
-          {currentDay && <p className="end-day">Današnji dan: <span>{currentDay}</span></p>}
-          <p className="end-subtitle">Iskoristili ste svih <b>5</b> pokušaja za danas.</p>
-          <p className="end-score">Pogodili ste <span className="end-score-num">{correctGuessesCount}</span> od <span className="end-score-num">5</span> pjesama</p>
-          <div className="end-countdown-section">
-            <p className="end-next-label">Sljedeći pokušaji bit će dostupni za:</p>
-            <div className="end-countdown-timer">{countdown || "00:00:00"}</div>
-          </div>
-          <p className="end-footer">Vidimo se sutra! 🎶 <span className="confetti-emoji">🎉🎊</span></p>
+    <>
+      <div className="container">
+        <div className="end-screen-header">
+          <h1 className="end-screen-title">KVIZ BALKANSKE MUZIKE</h1>
+          {currentDay && (
+            <div className="end-screen-day-info">
+              <div className="end-screen-day-icon">📅</div>
+              <p className="end-screen-day-text">Današnji dan: <span className="end-screen-day-value">{currentDay}</span></p>
+            </div>
+          )}
         </div>
-        <style jsx>{`
-          .end-screen-bg-fixed {
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: linear-gradient(135deg, #7f53ac 0%, #657ced 100%);
-            position: relative;
+        <div className="guessed-tracks-container">
+          {guessedOrder.map((track, index) => (
+            <div key={index} className={`guessed-track ${track.isCorrect ? 'correct' : 'incorrect'}`}>
+              <div className="track-number">{index + 1}</div>
+              <div className="track-info">
+                <div className="track-name">{track.name}</div>
+                <div className="track-artist">{track.artist}</div>
+              </div>
+              <div className="track-status">{track.isCorrect ? '✓' : '×'}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+      {showEndScreen && (
+        <div className="end-screen-bg-fixed" onClick={() => setShowEndScreen(false)}>
+          <div className="end-screen-glass-fixed" onClick={e => e.stopPropagation()}>
+            <button className="end-screen-close" onClick={() => setShowEndScreen(false)}>×</button>
+            <div className="trophy-icon">🏆</div>
+            <h1 className="end-title">Čestitamo!</h1>
+            {currentDay && <p className="end-day">Današnji dan: <span>{currentDay}</span></p>}
+            <p className="end-subtitle">Iskoristili ste svih <b>5</b> pokušaja za danas.</p>
+            <p className="end-score">Pogodili ste <span className="end-score-num">{correctGuessesCount}</span> od <span className="end-score-num">5</span> pjesama</p>
+            <div className="end-countdown-section">
+              <p className="end-next-label">Sljedeći pokušaji bit će dostupni za:</p>
+              <div className="end-countdown-timer">{countdown || "00:00:00"}</div>
+            </div>
+            <p className="end-footer">Vidimo se sutra! 🎶 <span className="confetti-emoji">🎉🎊</span></p>
+          </div>
+        </div>
+      )}
+      <style jsx>{`
+        .container {
+          padding: 2rem;
+          max-width: 800px;
+          margin: 0 auto;
+        }
+        .guessed-tracks-container {
+          margin-top: 2rem;
+          display: flex;
+          flex-direction: column;
+          gap: 1rem;
+        }
+        .guessed-track {
+          display: flex;
+          align-items: center;
+          padding: 1rem;
+          background: rgba(255, 255, 255, 0.1);
+          border-radius: 8px;
+          gap: 1rem;
+        }
+        .guessed-track.correct {
+          border-left: 4px solid #6fff57;
+        }
+        .guessed-track.incorrect {
+          border-left: 4px solid #ff5757;
+        }
+        .track-number {
+          font-size: 1.2rem;
+          font-weight: bold;
+          color: #bdbdbd;
+          min-width: 2rem;
+        }
+        .track-info {
+          flex: 1;
+        }
+        .track-name {
+          font-size: 1.1rem;
+          font-weight: 600;
+          color: #fff;
+        }
+        .track-artist {
+          font-size: 0.9rem;
+          color: #bdbdbd;
+        }
+        .track-status {
+          font-size: 1.5rem;
+          font-weight: bold;
+        }
+        .guessed-track.correct .track-status {
+          color: #6fff57;
+        }
+        .guessed-track.incorrect .track-status {
+          color: #ff5757;
+        }
+        .end-screen-bg-fixed {
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: rgba(0, 0, 0, 0.75);
+          backdrop-filter: blur(5px);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 1000;
+          animation: fadeIn 0.3s ease-out;
+        }
+        .end-screen-glass-fixed {
+          background: rgba(255,255,255,0.35);
+          border-radius: 2rem;
+          box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+          backdrop-filter: blur(16px);
+          -webkit-backdrop-filter: blur(16px);
+          border: 1px solid rgba(255,255,255,0.18);
+          padding: 3rem 2.5rem 2.5rem 2.5rem;
+          max-width: 420px;
+          width: 100%;
+          text-align: center;
+          position: relative;
+          z-index: 2;
+          animation: slideIn 0.3s ease-out;
+        }
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        @keyframes slideIn {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
           }
-          .end-screen-glass-fixed {
-            background: rgba(255,255,255,0.35);
-            border-radius: 2rem;
-            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(255,255,255,0.18);
-            padding: 3rem 2.5rem 2.5rem 2.5rem;
-            max-width: 420px;
-            width: 100%;
-            text-align: center;
-            position: relative;
-            z-index: 2;
+          to {
+            opacity: 1;
+            transform: translateY(0);
           }
-          .trophy-icon {
-            font-size: 3.5rem;
-            margin-bottom: 1.2rem;
-            animation: popIn 0.7s cubic-bezier(.68,-0.55,.27,1.55);
-          }
-          .end-title {
-            font-size: 2.5rem;
-            font-weight: 900;
-            color: #fff;
-            margin-bottom: 0.5rem;
-            text-shadow: 0 2px 8px rgba(0,0,0,0.18);
-          }
-          .end-day {
-            font-size: 1.1rem;
-            color: #e0e0e0;
-            margin-bottom: 1.2rem;
-          }
-          .end-subtitle {
-            font-size: 1.2rem;
-            color: #fff;
-            margin-bottom: 0.7rem;
-          }
-          .end-score {
-            font-size: 1.4rem;
-            color: #ffd700;
-            font-weight: 700;
-            margin-bottom: 1.5rem;
-          }
-          .end-score-num {
-            font-size: 1.7rem;
-            color: #fff;
-            font-weight: 900;
-            text-shadow: 0 2px 8px rgba(0,0,0,0.18);
-          }
-          .end-countdown-section {
-            margin-bottom: 1.5rem;
-          }
-          .end-next-label {
-            color: #fff;
-            font-size: 1.1rem;
-            margin-bottom: 0.5rem;
-          }
-          .end-countdown-timer {
-            font-family: monospace;
-            font-size: 2.2rem;
-            font-weight: 800;
-            color: #fff;
-            background: rgba(0,0,0,0.18);
-            border-radius: 0.7rem;
-            padding: 0.7rem 1.5rem;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.12);
-            margin: 0 auto 0.5rem auto;
-            display: inline-block;
-            letter-spacing: 2px;
-            animation: pulse 2s infinite;
-          }
-          @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
-          }
-          .end-footer {
-            color: #fff;
-            font-size: 1.2rem;
-            margin-top: 1.5rem;
-            opacity: 0.9;
-          }
-          .confetti-emoji {
-            font-size: 1.5rem;
-            margin-left: 0.3rem;
-          }
-          @keyframes popIn {
-            0% { transform: scale(0); }
-            60% { transform: scale(1.2); }
-            100% { transform: scale(1); }
-          }
-        `}</style>
-    </div>
+        }
+        .trophy-icon {
+          font-size: 3.5rem;
+          margin-bottom: 1.2rem;
+          animation: popIn 0.7s cubic-bezier(.68,-0.55,.27,1.55);
+        }
+        .end-title {
+          font-size: 2.5rem;
+          font-weight: 900;
+          color: #fff;
+          margin-bottom: 0.5rem;
+          text-shadow: 0 2px 8px rgba(0,0,0,0.18);
+        }
+        .end-day {
+          font-size: 1.1rem;
+          color: #e0e0e0;
+          margin-bottom: 1.2rem;
+        }
+        .end-subtitle {
+          font-size: 1.2rem;
+          color: #fff;
+          margin-bottom: 0.7rem;
+        }
+        .end-score {
+          font-size: 1.4rem;
+          color: #ffd700;
+          font-weight: 700;
+          margin-bottom: 1.5rem;
+        }
+        .end-score-num {
+          font-size: 1.7rem;
+          color: #fff;
+          font-weight: 900;
+          text-shadow: 0 2px 8px rgba(0,0,0,0.18);
+        }
+        .end-countdown-section {
+          margin-bottom: 1.5rem;
+        }
+        .end-next-label {
+          color: #fff;
+          font-size: 1.1rem;
+          margin-bottom: 0.5rem;
+        }
+        .end-countdown-timer {
+          font-family: monospace;
+          font-size: 2.2rem;
+          font-weight: 800;
+          color: #fff;
+          background: rgba(0,0,0,0.18);
+          border-radius: 0.7rem;
+          padding: 0.7rem 1.5rem;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+          margin: 0 auto 0.5rem auto;
+          display: inline-block;
+          letter-spacing: 2px;
+          animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.7; }
+        }
+        .end-footer {
+          color: #fff;
+          font-size: 1.2rem;
+          margin-top: 1.5rem;
+          opacity: 0.9;
+        }
+        .confetti-emoji {
+          font-size: 1.5rem;
+          margin-left: 0.3rem;
+        }
+        @keyframes popIn {
+          0% { transform: scale(0); }
+          60% { transform: scale(1.2); }
+          100% { transform: scale(1); }
+        }
+        .end-screen-close {
+          position: absolute;
+          top: 1rem;
+          right: 1rem;
+          background: rgba(255, 255, 255, 0.1);
+          border: none;
+          color: white;
+          width: 30px;
+          height: 30px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 20px;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          z-index: 3;
+        }
+        .end-screen-close:hover {
+          background: rgba(255, 255, 255, 0.2);
+          transform: rotate(90deg);
+        }
+        .end-screen-header {
+          text-align: center;
+          margin-bottom: 3rem;
+          padding: 2rem;
+          background: rgba(255, 255, 255, 0.05);
+          border-radius: 1rem;
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+          backdrop-filter: blur(10px);
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          animation: fadeIn 0.5s ease-out;
+        }
+        .end-screen-title {
+          font-size: 2.8rem;
+          font-weight: 800;
+          color: #fff;
+          margin-bottom: 1.5rem;
+          text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+          letter-spacing: 1px;
+        }
+        .end-screen-day-info {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 1rem;
+          padding: 1rem;
+          background: rgba(255, 255, 255, 0.1);
+          border-radius: 0.8rem;
+          max-width: 400px;
+          margin: 0 auto;
+        }
+        .end-screen-day-icon {
+          font-size: 1.8rem;
+          animation: bounce 2s infinite;
+        }
+        .end-screen-day-text {
+          font-size: 1.2rem;
+          color: #fff;
+          margin: 0;
+        }
+        .end-screen-day-value {
+          color: #6fff57;
+          font-weight: 700;
+          font-size: 1.3rem;
+        }
+        @keyframes bounce {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-5px); }
+        }
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(-10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
+    </>
   );
 }
 
@@ -1047,46 +1222,55 @@ return (
       {!currentTrack?.preview_url && (
         <div className="no-preview-message">Nema dostupne pretpregleda za ovu pjesmu. Preskačem...</div>
       )}
-      <div className="search-section-songless">
+      <div className={`search-section-songless ${isWrongGuess ? 'wrong-guess' : ''}`} ref={searchContainerRef}>
         <span className="search-icon-songless">🔍</span>
-            <input
+        <input
           className="search-input-songless"
-              type="text"
-              value={userGuess}
-              onChange={(e) => {
-                setUserGuess(e.target.value);
-                setShowSuggestions(true);
-              }}
-              placeholder="Znaš pjesmu? Upisi naziv izvođača i pjesme"
-              autoComplete="off"
-            />
-      </div>
-      {showSuggestions && (suggestionsLoading || artistSuggestions.length > 0) && (
-        <ul className="suggestions-list-songless">
-          {suggestionsLoading && (
-            <li className="suggestion-item-songless">Učitavanje...</li>
-          )}
-          {artistSuggestions.map((s, i) => (
-            <li
-              key={i}
-              className="suggestion-item-songless"
-              onClick={() => {
-                setUserGuess(s.displayName);
-                setShowSuggestions(false);
-              }}
-            >
-              <span style={{ display: 'flex', alignItems: 'center', gap: '0.7em' }}>
-                {s.image && (
-                  <Image src={s.image} alt="cover" width={36} height={36} style={{ borderRadius: 18, objectFit: 'cover', boxShadow: '0 2px 8px #0002' }} />
-                )}
-                <span>
-                  <b>{s.displayName}</b>
+          type="text"
+          value={userGuess}
+          onChange={(e) => {
+            setUserGuess(e.target.value);
+            if (e.target.value.length > 0) {
+              setShowSuggestions(true);
+            } else {
+              setShowSuggestions(false);
+            }
+          }}
+          onFocus={() => {
+            if (userGuess.length > 0) {
+              setShowSuggestions(true);
+            }
+          }}
+          placeholder="Znaš pjesmu? Upisi naziv izvođača i pjesme"
+          autoComplete="off"
+        />
+        {showSuggestions && (suggestionsLoading || artistSuggestions.length > 0) && (
+          <ul className="suggestions-list-songless">
+            {suggestionsLoading && (
+              <li className="suggestion-item-songless">Učitavanje...</li>
+            )}
+            {artistSuggestions.map((s, i) => (
+              <li
+                key={i}
+                className="suggestion-item-songless"
+                onClick={() => {
+                  setUserGuess(s.displayName);
+                  setShowSuggestions(false);
+                }}
+              >
+                <span style={{ display: 'flex', alignItems: 'center', gap: '0.7em' }}>
+                  {s.image && (
+                    <Image src={s.image} alt="cover" width={36} height={36} style={{ borderRadius: 18, objectFit: 'cover', boxShadow: '0 2px 8px #0002' }} />
+                  )}
+                  <span>
+                    <b>{s.displayName}</b>
+                  </span>
                 </span>
-              </span>
-            </li>
-          ))}
-        </ul>
-      )}
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
       <div className="button-row-songless">
         <button onClick={nextAttempt} className="skip-btn-songless">PRESKOČI</button>
         <button onClick={checkGuess} className="submit-btn-songless">POTVRDI</button>
@@ -1278,6 +1462,7 @@ return (
           padding: 0;
         }
         .search-section-songless {
+          position: relative;
           display: flex;
           align-items: center;
           gap: 0.5rem;
@@ -1287,6 +1472,7 @@ return (
           border-radius: 8px;
           border: 2px solid #333;
           padding: 0.5rem 1rem;
+          z-index: 20;
         }
         .search-icon-songless {
           margin-right: 0.5rem;
@@ -1317,11 +1503,17 @@ return (
           text-align: left;
           padding: 0;
           list-style: none;
+          max-height: 400px;
+          overflow-y: auto;
+          top: 100%;
         }
         .suggestion-item-songless {
-          padding: 10px 18px;
+          padding: 12px 18px;
           cursor: pointer;
           border-bottom: 1px solid #333;
+          display: flex;
+          align-items: center;
+          transition: background-color 0.2s;
         }
         .suggestion-item-songless:last-child {
           border-bottom: none;
@@ -1402,10 +1594,42 @@ return (
           margin: 1rem 0;
           font-weight: 600;
           }
+        .wrong-guess {
+          animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+          border: 2px solid #ff5757 !important;
+        }
+        @keyframes shake {
+          10%, 90% {
+            transform: translate3d(-1px, 0, 0);
+          }
+          20%, 80% {
+            transform: translate3d(2px, 0, 0);
+          }
+          30%, 50%, 70% {
+            transform: translate3d(-4px, 0, 0);
+          }
+          40%, 60% {
+            transform: translate3d(4px, 0, 0);
+          }
+        }
         @media (max-width: 700px) {
           .guess-slots, .progress-bar-songless, .search-section-songless, .button-row-songless, .volume-control-songless {
             max-width: 98vw;
           }
+        }
+        .suggestions-list-songless::-webkit-scrollbar {
+          width: 8px;
+        }
+        .suggestions-list-songless::-webkit-scrollbar-track {
+          background: #23272a;
+          border-radius: 4px;
+        }
+        .suggestions-list-songless::-webkit-scrollbar-thumb {
+          background: #444;
+          border-radius: 4px;
+        }
+        .suggestions-list-songless::-webkit-scrollbar-thumb:hover {
+          background: #555;
         }
       `}</style>
     </div>

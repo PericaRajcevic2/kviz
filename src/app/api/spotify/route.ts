@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import songsData from '@/data/songs.json';
 
 const DEEZER_API_URL = "https://api.deezer.com";
 
@@ -47,12 +48,21 @@ const BALKAN_TRACKS = [
   { artist: "Zdravko Čolić", title: "Ti si mi u krvi" }
 ];
 
+// Function to get the week number of the year
+function getWeekNumber() {
+  const now = new Date();
+  const start = new Date(now.getFullYear(), 0, 1);
+  const diff = now.getTime() - start.getTime();
+  const oneWeek = 7 * 24 * 60 * 60 * 1000;
+  return Math.floor(diff / oneWeek);
+}
+
 function getCurrentDay() {
   const days = ['nedjelja', 'ponedjeljak', 'utorak', 'srijeda', 'četvrtak', 'petak', 'subota'];
   return days[new Date().getDay()];
 }
 
-// Deterministic shuffle using a seed (date string)
+// Deterministic shuffle using a seed (week number + day)
 function seededRandom(seed: number) {
   const x = Math.sin(seed) * 10000;
   return x - Math.floor(x);
@@ -69,8 +79,10 @@ function seededShuffle<T>(array: T[], seed: number): T[] {
 
 function getTodaySeed() {
   const now = new Date();
-  // Use YYYYMMDD as seed
-  return parseInt(`${now.getFullYear()}${(now.getMonth()+1).toString().padStart(2,'0')}${now.getDate().toString().padStart(2,'0')}`);
+  const weekNumber = getWeekNumber();
+  const dayOfWeek = now.getDay();
+  // Combine week number and day to create a unique seed for each day of each week
+  return weekNumber * 7 + dayOfWeek;
 }
 
 async function searchTrack(artist: string, title: string): Promise<DeezerTrack | null> {
@@ -95,13 +107,22 @@ async function searchTrack(artist: string, title: string): Promise<DeezerTrack |
 
 export async function GET() {
   try {
-    // Deterministically shuffle the tracks array based on today's date
+    // Get songs from the JSON file
+    const allSongs = songsData.songs;
+    
+    // Get today's seed based on week number and day
     const todaySeed = getTodaySeed();
-    const shuffledTracks = seededShuffle(BALKAN_TRACKS, todaySeed);
-    // Try to find 5 tracks with previews (no attempt limit, just go through the list)
+    const shuffledTracks = seededShuffle(allSongs, todaySeed);
+    
+    // Try to find 5 tracks with previews by searching through more tracks
     const tracks: DeezerTrack[] = [];
+    let attempts = 0;
+    const maxAttempts = 20; // Try up to 20 tracks to find 5 with previews
+
     for (const track of shuffledTracks) {
-      if (tracks.length >= 5) break;
+      if (tracks.length >= 5 || attempts >= maxAttempts) break;
+      attempts++;
+      
       const foundTrack = await searchTrack(track.artist, track.title);
       if (foundTrack && foundTrack.preview) {
         tracks.push(foundTrack);
@@ -123,9 +144,13 @@ export async function GET() {
       spotify_id: t.id.toString()
     }));
 
+    // Get the current week number
+    const currentWeek = getWeekNumber();
+
     return NextResponse.json({
       tracks: responseTracks,
       day: getCurrentDay(),
+      week: currentWeek,
       cooldownUntil: new Date(new Date().setHours(24, 0, 0, 0)).toISOString()
     });
   } catch (e: unknown) {

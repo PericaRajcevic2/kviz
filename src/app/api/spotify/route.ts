@@ -15,39 +15,6 @@ interface DeezerTrack {
   };
 }
 
-// List of popular Balkan artists and their songs
-const BALKAN_TRACKS = [
-  { artist: "Dino Merlin", title: "Sve je laža" },
-  { artist: "Zdravko Čolić", title: "Ti si mi u krvi" },
-  { artist: "Bijelo Dugme", title: "Ako ima boga" },
-  { artist: "Ceca", title: "Kukavica" },
-  { artist: "Severina", title: "Moj je život moja stvar" },
-  { artist: "Jelena Rozga", title: "Oprosti mala" },
-  { artist: "Halid Bešlić", title: "Miljacka" },
-  { artist: "Seka Aleksić", title: "Bomba" },
-  { artist: "Mile Kitić", title: "Oči boje meda" },
-  { artist: "Lepa Brena", title: "Jugoslovenka" },
-  { artist: "Dragana Mirković", title: "Ostani" },
-  { artist: "Zeljko Joksimovic", title: "Lane moje" },
-  { artist: "Marija Šerifović", title: "Molitva" },
-  { artist: "Željko Samardžić", title: "Sve bih dao" },
-  { artist: "Dino Merlin", title: "Supermen" },
-  { artist: "Zdravko Čolić", title: "Zagrli me" },
-  { artist: "Bijelo Dugme", title: "Lična karta" },
-  { artist: "Ceca", title: "Nevaljala" },
-  { artist: "Jelena Rozga", title: "Bižuterija" },
-  { artist: "Halid Bešlić", title: "Romanija" },
-  { artist: "Seka Aleksić", title: "Sve bih dala" },
-  { artist: "Mile Kitić", title: "Sve bih dao" },
-  { artist: "Lepa Brena", title: "Čačak, Čačak" },
-  { artist: "Dragana Mirković", title: "Sve bih dala" },
-  { artist: "Zeljko Joksimovic", title: "Nije ljubav stvar" },
-  { artist: "Marija Šerifović", title: "Nisam anđeo" },
-  { artist: "Željko Samardžić", title: "Sve bih dao" },
-  { artist: "Dino Merlin", title: "Burek" },
-  { artist: "Zdravko Čolić", title: "Ti si mi u krvi" }
-];
-
 // Function to get the week number of the year
 function getWeekNumber() {
   const now = new Date();

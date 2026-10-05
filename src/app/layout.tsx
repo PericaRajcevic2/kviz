@@ -1,35 +1,28 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
 export const metadata: Metadata = {
-  title: "Kviz Balkanske Muzike",
-  description: "Pogodi poznate balkanske hitove",
-  viewport: "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0",
+  title: "Balkan na sluh — Kviz balkanske muzike",
+  description:
+    "Jedna sekunda. Poznat zvuk. Znaš li pjesmu? Pogodi balkanske hitove u dnevnom izazovu ili igraj svoj miks.",
+  openGraph: {
+    title: "Balkan na sluh",
+    description:
+      "Prepoznaj balkanski hit iz samo jedne sekunde. Pet pjesama, jedan dnevni izazov.",
+    locale: "hr_HR",
+    type: "website",
+  },
 };
-
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: "#f7f5ef",
+};
 export default function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+}: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="hr">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        {children}
-      </body>
+    <html lang="bs">
+      <body>{children}</body>
     </html>
   );
 }

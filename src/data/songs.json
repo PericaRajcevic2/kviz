@@ -1,529 +1,930 @@
 {
   "songs": [
     {
-      "artist": "Dino Merlin",
-      "title": "Sve je laža",
-      "category": "pop"
-    },
-    {
-      "artist": "Zdravko Čolić",
-      "title": "Ti si mi u krvi",
-      "category": "pop"
-    },
-    {
-      "artist": "Bijelo Dugme",
-      "title": "Ako ima boga",
-      "category": "rock"
-    },
-    {
-      "artist": "Ceca",
-      "title": "Kukavica",
-      "category": "folk"
-    },
-    {
-      "artist": "Severina",
-      "title": "Moj je život moja stvar",
-      "category": "pop"
-    },
-    {
-      "artist": "Jelena Rozga",
-      "title": "Oprosti mala",
-      "category": "pop"
-    },
-    {
-      "artist": "Halid Bešlić",
-      "title": "Miljacka",
-      "category": "folk"
-    },
-    {
-      "artist": "Seka Aleksić",
-      "title": "Bomba",
-      "category": "pop"
-    },
-    {
-      "artist": "Mile Kitić",
-      "title": "Oči boje meda",
-      "category": "folk"
-    },
-    {
-      "artist": "Lepa Brena",
-      "title": "Jugoslovenka",
-      "category": "folk"
-    },
-    {
-      "artist": "Dragana Mirković",
-      "title": "Ostani",
-      "category": "folk"
-    },
-    {
-      "artist": "Zeljko Joksimovic",
-      "title": "Lane moje",
-      "category": "folk"
-    },
-    {
-      "artist": "Marija Šerifović",
-      "title": "Molitva",
-      "category": "pop"
-    },
-    {
-      "artist": "Željko Samardžić",
-      "title": "Sve bih dao",
-      "category": "folk"
-    },
-    {
-      "artist": "Dino Merlin",
-      "title": "Supermen",
-      "category": "pop"
-    },
-    {
-      "artist": "Zdravko Čolić",
-      "title": "Zagrli me",
-      "category": "pop"
-    },
-    {
-      "artist": "Bijelo Dugme",
-      "title": "Lična karta",
-      "category": "rock"
-    },
-    {
-      "artist": "Ceca",
-      "title": "Nevaljala",
-      "category": "folk"
-    },
-    {
-      "artist": "Jelena Rozga",
-      "title": "Bižuterija",
-      "category": "pop"
-    },
-    {
-      "artist": "Halid Bešlić",
-      "title": "Romanija",
-      "category": "folk"
-    },
-    {
-      "artist": "Seka Aleksić",
-      "title": "Sve bih dala",
-      "category": "pop"
-    },
-    {
-      "artist": "Mile Kitić",
-      "title": "Sve bih dao",
-      "category": "folk"
-    },
-    {
-      "artist": "Lepa Brena",
-      "title": "Čačak, Čačak",
-      "category": "folk"
-    },
-    {
-      "artist": "Dragana Mirković",
-      "title": "Sve bih dala",
-      "category": "folk"
-    },
-    {
-      "artist": "Zeljko Joksimovic",
-      "title": "Nije ljubav stvar",
-      "category": "pop"
-    },
-    {
-      "artist": "Marija Šerifović",
-      "title": "Nisam anđeo",
-      "category": "pop"
-    },
-    {
-      "artist": "Željko Samardžić",
-      "title": "Sve bih dao",
-      "category": "folk"
-    },
-    {
-      "artist": "Dino Merlin",
-      "title": "Burek",
-      "category": "pop"
-    },
-    {
-      "artist": "Zdravko Čolić",
-      "title": "Ti si mi u krvi",
-      "category": "pop"
-    },
-    {
-      "artist": "Ceca",
-      "title": "Zabranjeni grad",
-      "category": "folk"
-    },
-    {
-      "artist": "Lepa Brena",
-      "title": "Mile voli disko",
-      "category": "folk"
-    },
-    {
+      "id": "dino-merlin-kad-si-rekla-da-me-volis",
       "artist": "Dino Merlin",
       "title": "Kad si rekla da me voliš",
       "category": "pop"
     },
     {
-      "artist": "Zdravko Čolić",
-      "title": "Ona spava",
-      "category": "pop"
+      "id": "dino-merlin-sve-je-laz",
+      "artist": "Dino Merlin",
+      "title": "Sve je laž",
+      "category": "pop",
+      "aliases": ["Sve je laža"]
     },
     {
-      "artist": "Bijelo Dugme",
-      "title": "Sanjao sam noćas da te nemam",
-      "category": "rock"
-    },
-    {
-      "artist": "Severina",
-      "title": "Dalmatinka",
-      "category": "pop"
-    },
-    {
-      "artist": "Jelena Rozga",
-      "title": "Gospe moja",
-      "category": "pop"
-    },
-    {
-      "artist": "Halid Bešlić",
-      "title": "Ne zovi me, ne traži me",
-      "category": "folk"
-    },
-    {
-      "artist": "Seka Aleksić",
-      "title": "Sve bih dala",
-      "category": "pop"
-    },
-    {
-      "artist": "Mile Kitić",
-      "title": "Oči boje meda",
-      "category": "folk"
-    },
-    {
-      "artist": "Dragana Mirković",
-      "title": "Ostani",
-      "category": "folk"
-    },
-    {
-      "artist": "Zeljko Joksimovic",
-      "title": "Leđa o leđa",
-      "category": "pop"
-    },
-    {
-      "artist": "Marija Šerifović",
-      "title": "Molitva",
-      "category": "pop"
-    },
-    {
-      "artist": "Željko Samardžić",
-      "title": "Sve bih dao",
-      "category": "folk"
-    },
-    {
+      "id": "dino-merlin-burek",
       "artist": "Dino Merlin",
       "title": "Burek",
       "category": "pop"
     },
     {
+      "id": "dino-merlin-kad-covjek-voli-zenu",
+      "artist": "Dino Merlin",
+      "title": "Kad čovjek voli ženu",
+      "category": "pop"
+    },
+    {
+      "id": "dino-merlin-da-sutis",
+      "artist": "Dino Merlin",
+      "title": "Da šutiš",
+      "category": "pop"
+    },
+    {
+      "id": "dino-merlin-deset-mlaa",
+      "artist": "Dino Merlin",
+      "title": "Deset mlađa",
+      "category": "pop"
+    },
+    {
+      "id": "dino-merlin-sredinom",
+      "artist": "Dino Merlin",
+      "title": "Sredinom",
+      "category": "pop"
+    },
+    {
+      "id": "dino-merlin-bosnom-behar-probeharao",
+      "artist": "Dino Merlin",
+      "title": "Bosnom behar probeharao",
+      "category": "pop"
+    },
+    {
+      "id": "zdravko-colic-ti-si-mi-u-krvi",
       "artist": "Zdravko Čolić",
       "title": "Ti si mi u krvi",
       "category": "pop"
     },
     {
-      "artist": "Ceca",
-      "title": "Nevaljala",
-      "category": "folk"
-    },
-    {
-      "artist": "Lepa Brena",
-      "title": "Jugoslovenka",
-      "category": "folk"
-    },
-    {
-      "artist": "Dino Merlin",
-      "title": "Supermen",
-      "category": "pop"
-    },
-    {
+      "id": "zdravko-colic-zagrli-me",
       "artist": "Zdravko Čolić",
       "title": "Zagrli me",
       "category": "pop"
     },
     {
-      "artist": "Bijelo Dugme",
-      "title": "Lična karta",
-      "category": "rock"
-    },
-    {
-      "artist": "Severina",
-      "title": "Moj je život moja stvar",
-      "category": "pop"
-    },
-    {
-      "artist": "Jelena Rozga",
-      "title": "Bižuterija",
-      "category": "pop"
-    },
-    {
-      "artist": "Halid Bešlić",
-      "title": "Romanija",
-      "category": "folk"
-    },
-    {
-      "artist": "Seka Aleksić",
-      "title": "Sve bih dala",
-      "category": "pop"
-    },
-    {
-      "artist": "Mile Kitić",
-      "title": "Sve bih dao",
-      "category": "folk"
-    },
-    {
-      "artist": "Dragana Mirković",
-      "title": "Sve bih dala",
-      "category": "folk"
-    },
-    {
-      "artist": "Zeljko Joksimovic",
-      "title": "Nije ljubav stvar",
-      "category": "pop"
-    },
-    {
-      "artist": "Marija Šerifović",
-      "title": "Nisam anđeo",
-      "category": "pop"
-    },
-    {
-      "artist": "Željko Samardžić",
-      "title": "Sve bih dao",
-      "category": "folk"
-    },
-    {
-      "artist": "Dino Merlin",
-      "title": "Burek",
-      "category": "pop"
-    },
-    {
-      "artist": "Zdravko Čolić",
-      "title": "Ti si mi u krvi",
-      "category": "pop"
-    },
-    {
-      "artist": "Ceca",
-      "title": "Dokaz",
-      "category": "folk"
-    },
-    {
-      "artist": "Lepa Brena",
-      "title": "Ja nemam drugi dom",
-      "category": "folk"
-    },
-    {
-      "artist": "Dino Merlin",
-      "title": "Da ti kažem šta mi je",
-      "category": "pop"
-    },
-    {
+      "id": "zdravko-colic-pusti-pusti-modu",
       "artist": "Zdravko Čolić",
       "title": "Pusti, pusti modu",
       "category": "pop"
     },
     {
-      "artist": "Bijelo Dugme",
-      "title": "Đurđevdan",
-      "category": "rock"
-    },
-    {
-      "artist": "Severina",
-      "title": "Uno momento",
-      "category": "pop"
-    },
-    {
-      "artist": "Jelena Rozga",
-      "title": "Sunce",
-      "category": "pop"
-    },
-    {
-      "artist": "Halid Bešlić",
-      "title": "Prvi poljubac",
-      "category": "folk"
-    },
-    {
-      "artist": "Zeljko Joksimovic",
-      "title": "Oro",
-      "category": "folk"
-    },
-    {
-      "artist": "Ceca",
-      "title": "Volim te",
-      "category": "folk"
-    },
-    {
-      "artist": "Lepa Brena",
-      "title": "Čik pogodi ko sam ja",
-      "category": "folk"
-    },
-    {
-      "artist": "Dino Merlin",
-      "title": "Sve dok sanjaš",
-      "category": "pop"
-    },
-    {
+      "id": "zdravko-colic-produzi-dalje",
       "artist": "Zdravko Čolić",
-      "title": "Pogledaj u nebo",
+      "title": "Produži dalje",
       "category": "pop"
     },
     {
-      "artist": "Bijelo Dugme",
-      "title": "Kad bi bio bijelo dugme",
-      "category": "rock"
+      "id": "zdravko-colic-pjevam-danju-pjevam-nocu",
+      "artist": "Zdravko Čolić",
+      "title": "Pjevam danju, pjevam noću",
+      "category": "pop"
     },
     {
+      "id": "zdravko-colic-cija-je-ono-zvijezda",
+      "artist": "Zdravko Čolić",
+      "title": "Čija je ono zvijezda",
+      "category": "pop"
+    },
+    {
+      "id": "severina-gas-gas",
       "artist": "Severina",
       "title": "Gas, gas",
       "category": "pop"
     },
     {
-      "artist": "Jelena Rozga",
-      "title": "Sve bih dala",
+      "id": "severina-dalmatinka",
+      "artist": "Severina",
+      "title": "Dalmatinka",
       "category": "pop"
     },
     {
-      "artist": "Halid Bešlić",
-      "title": "Sarajevo",
-      "category": "folk"
+      "id": "severina-djevojka-sa-sela",
+      "artist": "Severina",
+      "title": "Djevojka sa sela",
+      "category": "pop"
     },
     {
-      "artist": "Zeljko Joksimovic",
+      "id": "severina-prijateljice",
+      "artist": "Severina",
+      "title": "Prijateljice",
+      "category": "pop"
+    },
+    {
+      "id": "severina-virujen-u-te",
+      "artist": "Severina",
+      "title": "Virujen u te",
+      "category": "pop"
+    },
+    {
+      "id": "jelena-rozga-bizuterija",
+      "artist": "Jelena Rozga",
+      "title": "Bižuterija",
+      "category": "pop"
+    },
+    {
+      "id": "jelena-rozga-nirvana",
+      "artist": "Jelena Rozga",
+      "title": "Nirvana",
+      "category": "pop"
+    },
+    {
+      "id": "jelena-rozga-gospe-moja",
+      "artist": "Jelena Rozga",
+      "title": "Gospe moja",
+      "category": "pop"
+    },
+    {
+      "id": "jelena-rozga-razmazena",
+      "artist": "Jelena Rozga",
+      "title": "Razmažena",
+      "category": "pop"
+    },
+    {
+      "id": "zeljko-joksimovic-lane-moje",
+      "artist": "Željko Joksimović",
+      "title": "Lane moje",
+      "category": "pop"
+    },
+    {
+      "id": "zeljko-joksimovic-nije-ljubav-stvar",
+      "artist": "Željko Joksimović",
       "title": "Nije ljubav stvar",
       "category": "pop"
     },
     {
-      "artist": "Ceca",
-      "title": "Cvetak zanovetak",
-      "category": "folk"
-    },
-    {
-      "artist": "Lepa Brena",
-      "title": "Miki Mićo",
-      "category": "folk"
-    },
-    {
-      "artist": "Dino Merlin",
-      "title": "Kad si rekla da me voliš",
+      "id": "zeljko-joksimovic-lea-o-lea",
+      "artist": "Željko Joksimović",
+      "title": "Leđa o leđa",
       "category": "pop"
     },
     {
-      "artist": "Zdravko Čolić",
-      "title": "Ljubav je samo riječ",
+      "id": "zeljko-joksimovic-ludak-kao-ja",
+      "artist": "Željko Joksimović",
+      "title": "Ludak kao ja",
       "category": "pop"
     },
     {
+      "id": "marija-serifovic-molitva",
+      "artist": "Marija Šerifović",
+      "title": "Molitva",
+      "category": "pop"
+    },
+    {
+      "id": "marija-serifovic-pametna-i-luda",
+      "artist": "Marija Šerifović",
+      "title": "Pametna i luda",
+      "category": "pop"
+    },
+    {
+      "id": "sergej-cetkovic-pogledi-u-tami",
+      "artist": "Sergej Ćetković",
+      "title": "Pogledi u tami",
+      "category": "pop"
+    },
+    {
+      "id": "sergej-cetkovic-korov",
+      "artist": "Sergej Ćetković",
+      "title": "Korov",
+      "category": "pop"
+    },
+    {
+      "id": "tose-proeski-cija-si",
+      "artist": "Toše Proeski",
+      "title": "Čija si",
+      "category": "pop"
+    },
+    {
+      "id": "tose-proeski-igra-bez-granica",
+      "artist": "Toše Proeski",
+      "title": "Igra bez granica",
+      "category": "pop"
+    },
+    {
+      "id": "tose-proeski-pratim-te",
+      "artist": "Toše Proeski",
+      "title": "Pratim te",
+      "category": "pop"
+    },
+    {
+      "id": "tose-proeski-srce-nije-kamen",
+      "artist": "Toše Proeski",
+      "title": "Srce nije kamen",
+      "category": "pop"
+    },
+    {
+      "id": "oliver-dragojevic-cesarica",
+      "artist": "Oliver Dragojević",
+      "title": "Cesarica",
+      "category": "pop"
+    },
+    {
+      "id": "oliver-dragojevic-moj-lipi-anele",
+      "artist": "Oliver Dragojević",
+      "title": "Moj lipi anđele",
+      "category": "pop"
+    },
+    {
+      "id": "oliver-dragojevic-trag-u-beskraju",
+      "artist": "Oliver Dragojević",
+      "title": "Trag u beskraju",
+      "category": "pop"
+    },
+    {
+      "id": "oliver-dragojevic-vjeruj-u-ljubav",
+      "artist": "Oliver Dragojević",
+      "title": "Vjeruj u ljubav",
+      "category": "pop"
+    },
+    {
+      "id": "gibonni-libar",
+      "artist": "Gibonni",
+      "title": "Libar",
+      "category": "pop"
+    },
+    {
+      "id": "gibonni-mirakul",
+      "artist": "Gibonni",
+      "title": "Mirakul",
+      "category": "pop"
+    },
+    {
+      "id": "gibonni-oprosti",
+      "artist": "Gibonni",
+      "title": "Oprosti",
+      "category": "pop"
+    },
+    {
+      "id": "nina-badric-dani-i-godine",
+      "artist": "Nina Badrić",
+      "title": "Dani i godine",
+      "category": "pop"
+    },
+    {
+      "id": "nina-badric-carobno-jutro",
+      "artist": "Nina Badrić",
+      "title": "Čarobno jutro",
+      "category": "pop"
+    },
+    {
+      "id": "petar-graso-ako-te-pitaju",
+      "artist": "Petar Grašo",
+      "title": "Ako te pitaju",
+      "category": "pop"
+    },
+    {
+      "id": "petar-graso-ko-nam-brani",
+      "artist": "Petar Grašo",
+      "title": "Ko nam brani",
+      "category": "pop"
+    },
+    {
+      "id": "toni-cetinski-blago-onom-tko-te-ima",
+      "artist": "Toni Cetinski",
+      "title": "Blago onom tko te ima",
+      "category": "pop"
+    },
+    {
+      "id": "toni-cetinski-kad-zena-zavoli",
+      "artist": "Toni Cetinski",
+      "title": "Kad žena zavoli",
+      "category": "pop"
+    },
+    {
+      "id": "vanna-kao-da-me-nema",
+      "artist": "Vanna",
+      "title": "Kao da me nema",
+      "category": "pop"
+    },
+    {
+      "id": "magazin-tri-sam-ti-zime-saptala-ime",
+      "artist": "Magazin",
+      "title": "Tri sam ti zime šaptala ime",
+      "category": "pop"
+    },
+    {
+      "id": "magazin-put-putujem",
+      "artist": "Magazin",
+      "title": "Put putujem",
+      "category": "pop"
+    },
+    {
+      "id": "hari-mata-hari-lejla",
+      "artist": "Hari Mata Hari",
+      "title": "Lejla",
+      "category": "pop"
+    },
+    {
+      "id": "hari-mata-hari-strah-me-da-te-volim",
+      "artist": "Hari Mata Hari",
+      "title": "Strah me da te volim",
+      "category": "pop"
+    },
+    {
+      "id": "bijelo-dugme-urevdan",
+      "artist": "Bijelo Dugme",
+      "title": "Đurđevdan",
+      "category": "rock",
+      "aliases": ["Đurđevdan je a ja nisam s onom koju volim"]
+    },
+    {
+      "id": "bijelo-dugme-ako-ima-boga",
       "artist": "Bijelo Dugme",
       "title": "Ako ima boga",
       "category": "rock"
     },
     {
-      "artist": "Severina",
-      "title": "Moja stvar",
-      "category": "pop"
+      "id": "bijelo-dugme-sanjao-sam-nocas-da-te-nemam",
+      "artist": "Bijelo Dugme",
+      "title": "Sanjao sam noćas da te nemam",
+      "category": "rock"
     },
     {
-      "artist": "Jelena Rozga",
-      "title": "Oprosti mala",
-      "category": "pop"
+      "id": "bijelo-dugme-lipe-cvatu",
+      "artist": "Bijelo Dugme",
+      "title": "Lipe cvatu",
+      "category": "rock"
     },
     {
+      "id": "bijelo-dugme-ruzica-si-bila",
+      "artist": "Bijelo Dugme",
+      "title": "Ružica si bila",
+      "category": "rock"
+    },
+    {
+      "id": "bijelo-dugme-ne-spavaj-mala-moja-muzika-dok-svira",
+      "artist": "Bijelo Dugme",
+      "title": "Ne spavaj mala moja muzika dok svira",
+      "category": "rock"
+    },
+    {
+      "id": "parni-valjak-sve-jos-mirise-na-nju",
+      "artist": "Parni Valjak",
+      "title": "Sve još miriše na nju",
+      "category": "rock"
+    },
+    {
+      "id": "parni-valjak-jesen-u-meni",
+      "artist": "Parni Valjak",
+      "title": "Jesen u meni",
+      "category": "rock"
+    },
+    {
+      "id": "parni-valjak-lutka-za-bal",
+      "artist": "Parni Valjak",
+      "title": "Lutka za bal",
+      "category": "rock"
+    },
+    {
+      "id": "parni-valjak-ugasi-me",
+      "artist": "Parni Valjak",
+      "title": "Ugasi me",
+      "category": "rock"
+    },
+    {
+      "id": "prljavo-kazaliste-heroj-ulice",
+      "artist": "Prljavo Kazalište",
+      "title": "Heroj ulice",
+      "category": "rock"
+    },
+    {
+      "id": "prljavo-kazaliste-mojoj-majci",
+      "artist": "Prljavo Kazalište",
+      "title": "Mojoj majci",
+      "category": "rock",
+      "aliases": ["Ruža hrvatska"]
+    },
+    {
+      "id": "prljavo-kazaliste-tu-noc-kad-si-se-udavala",
+      "artist": "Prljavo Kazalište",
+      "title": "Tu noć kad si se udavala",
+      "category": "rock"
+    },
+    {
+      "id": "prljavo-kazaliste-marina",
+      "artist": "Prljavo Kazalište",
+      "title": "Marina",
+      "category": "rock"
+    },
+    {
+      "id": "crvena-jabuka-tugo-nesreco",
+      "artist": "Crvena Jabuka",
+      "title": "Tugo, nesrećo",
+      "category": "rock"
+    },
+    {
+      "id": "crvena-jabuka-ima-nesto-od-srca-do-srca",
+      "artist": "Crvena Jabuka",
+      "title": "Ima nešto od srca do srca",
+      "category": "rock"
+    },
+    {
+      "id": "crvena-jabuka-bjezi-kiso-s-prozora",
+      "artist": "Crvena Jabuka",
+      "title": "Bježi kišo s prozora",
+      "category": "rock"
+    },
+    {
+      "id": "plavi-orkestar-bolje-biti-pijan-nego-star",
+      "artist": "Plavi Orkestar",
+      "title": "Bolje biti pijan nego star",
+      "category": "rock"
+    },
+    {
+      "id": "plavi-orkestar-suada",
+      "artist": "Plavi Orkestar",
+      "title": "Suada",
+      "category": "rock"
+    },
+    {
+      "id": "plavi-orkestar-ako-su-to-samo-bile-lazi",
+      "artist": "Plavi Orkestar",
+      "title": "Ako su to samo bile laži",
+      "category": "rock"
+    },
+    {
+      "id": "bajaga-instruktori-tisina",
+      "artist": "Bajaga & Instruktori",
+      "title": "Tišina",
+      "category": "rock",
+      "artistAliases": ["Bajaga i Instruktori"]
+    },
+    {
+      "id": "bajaga-instruktori-moji-drugovi",
+      "artist": "Bajaga & Instruktori",
+      "title": "Moji drugovi",
+      "category": "rock",
+      "artistAliases": ["Bajaga i Instruktori"]
+    },
+    {
+      "id": "bajaga-instruktori-zazmuri",
+      "artist": "Bajaga & Instruktori",
+      "title": "Zažmuri",
+      "category": "rock",
+      "artistAliases": ["Bajaga i Instruktori"]
+    },
+    {
+      "id": "azra-balkan",
+      "artist": "Azra",
+      "title": "Balkan",
+      "category": "rock"
+    },
+    {
+      "id": "azra-a-sta-da-radim",
+      "artist": "Azra",
+      "title": "A šta da radim",
+      "category": "rock"
+    },
+    {
+      "id": "indexi-bacila-je-sve-niz-rijeku",
+      "artist": "Indexi",
+      "title": "Bacila je sve niz rijeku",
+      "category": "rock"
+    },
+    {
+      "id": "indexi-sanjam",
+      "artist": "Indexi",
+      "title": "Sanjam",
+      "category": "rock"
+    },
+    {
+      "id": "zabranjeno-pusenje-zenica-blues",
+      "artist": "Zabranjeno Pušenje",
+      "title": "Zenica blues",
+      "category": "rock"
+    },
+    {
+      "id": "zabranjeno-pusenje-jugo-45",
+      "artist": "Zabranjeno Pušenje",
+      "title": "Jugo 45",
+      "category": "rock"
+    },
+    {
+      "id": "riblja-corba-pogledaj-dom-svoj-anele",
+      "artist": "Riblja Čorba",
+      "title": "Pogledaj dom svoj, anđele",
+      "category": "rock"
+    },
+    {
+      "id": "riblja-corba-lutka-sa-naslovne-strane",
+      "artist": "Riblja Čorba",
+      "title": "Lutka sa naslovne strane",
+      "category": "rock"
+    },
+    {
+      "id": "divlje-jagode-motori",
+      "artist": "Divlje Jagode",
+      "title": "Motori",
+      "category": "rock"
+    },
+    {
+      "id": "divlje-jagode-jedina-moja",
+      "artist": "Divlje Jagode",
+      "title": "Jedina moja",
+      "category": "rock"
+    },
+    {
+      "id": "kerber-bolje-da-sam-druge-ljubio",
+      "artist": "Kerber",
+      "title": "Bolje da sam druge ljubio",
+      "category": "rock"
+    },
+    {
+      "id": "halid-beslic-miljacka",
       "artist": "Halid Bešlić",
       "title": "Miljacka",
       "category": "folk"
     },
     {
-      "artist": "Jala Brat",
-      "title": "Magla",
-      "category": "trap"
+      "id": "halid-beslic-romanija",
+      "artist": "Halid Bešlić",
+      "title": "Romanija",
+      "category": "folk"
     },
     {
-      "artist": "Buba Corelli",
-      "title": "Aman",
-      "category": "trap"
+      "id": "halid-beslic-prvi-poljubac",
+      "artist": "Halid Bešlić",
+      "title": "Prvi poljubac",
+      "category": "folk"
     },
     {
-      "artist": "Rasta",
-      "title": "Moja bol",
-      "category": "trap"
+      "id": "halid-beslic-ja-bez-tebe-ne-mogu-da-zivim",
+      "artist": "Halid Bešlić",
+      "title": "Ja bez tebe ne mogu da živim",
+      "category": "folk"
     },
     {
-      "artist": "Devito",
-      "title": "Dođi",
-      "category": "trap"
+      "id": "halid-beslic-u-meni-jesen-je",
+      "artist": "Halid Bešlić",
+      "title": "U meni jesen je",
+      "category": "folk"
     },
     {
+      "id": "haris-dzinovic-i-tebe-sam-sit-kafano",
+      "artist": "Haris Džinović",
+      "title": "I tebe sam sit kafano",
+      "category": "folk"
+    },
+    {
+      "id": "haris-dzinovic-mustuluk",
+      "artist": "Haris Džinović",
+      "title": "Muštuluk",
+      "category": "folk"
+    },
+    {
+      "id": "haris-dzinovic-laze-mjesec",
+      "artist": "Haris Džinović",
+      "title": "Laže mjesec",
+      "category": "folk"
+    },
+    {
+      "id": "haris-dzinovic-kako-mi-nedostajes",
+      "artist": "Haris Džinović",
+      "title": "Kako mi nedostaješ",
+      "category": "folk"
+    },
+    {
+      "id": "saban-saulic-doi-da-ostarimo-zajedno",
+      "artist": "Šaban Šaulić",
+      "title": "Dođi da ostarimo zajedno",
+      "category": "folk"
+    },
+    {
+      "id": "saban-saulic-s-namerom-dooh-u-veliki-grad",
+      "artist": "Šaban Šaulić",
+      "title": "S namerom dođoh u veliki grad",
+      "category": "folk"
+    },
+    {
+      "id": "saban-saulic-kralj-boema",
+      "artist": "Šaban Šaulić",
+      "title": "Kralj boema",
+      "category": "folk"
+    },
+    {
+      "id": "toma-zdravkovic-danka",
+      "artist": "Toma Zdravković",
+      "title": "Danka",
+      "category": "folk"
+    },
+    {
+      "id": "toma-zdravkovic-dotak-o-sam-dno-zivota",
+      "artist": "Toma Zdravković",
+      "title": "Dotak'o sam dno života",
+      "category": "folk"
+    },
+    {
+      "id": "toma-zdravkovic-kafana-je-moja-sudbina",
+      "artist": "Toma Zdravković",
+      "title": "Kafana je moja sudbina",
+      "category": "folk"
+    },
+    {
+      "id": "toma-zdravkovic-za-ljiljanu",
+      "artist": "Toma Zdravković",
+      "title": "Za Ljiljanu",
+      "category": "folk"
+    },
+    {
+      "id": "sinan-sakic-ej-od-kad-sam-se-rodio",
+      "artist": "Sinan Sakić",
+      "title": "Ej, od kad sam se rodio",
+      "category": "folk"
+    },
+    {
+      "id": "sinan-sakic-lepa-do-bola",
+      "artist": "Sinan Sakić",
+      "title": "Lepa do bola",
+      "category": "folk"
+    },
+    {
+      "id": "sinan-sakic-sudbina-me-na-put-salje",
+      "artist": "Sinan Sakić",
+      "title": "Sudbina me na put šalje",
+      "category": "folk"
+    },
+    {
+      "id": "ceca-kukavica",
+      "artist": "Ceca",
+      "title": "Kukavica",
+      "category": "folk"
+    },
+    {
+      "id": "ceca-beograd",
+      "artist": "Ceca",
+      "title": "Beograd",
+      "category": "folk"
+    },
+    {
+      "id": "ceca-lepi-grome-moj",
+      "artist": "Ceca",
+      "title": "Lepi grome moj",
+      "category": "folk"
+    },
+    {
+      "id": "ceca-zabranjeni-grad",
+      "artist": "Ceca",
+      "title": "Zabranjeni grad",
+      "category": "folk"
+    },
+    {
+      "id": "lepa-brena-jugoslovenka",
+      "artist": "Lepa Brena",
+      "title": "Jugoslovenka",
+      "category": "folk"
+    },
+    {
+      "id": "lepa-brena-mile-voli-disko",
+      "artist": "Lepa Brena",
+      "title": "Mile voli disko",
+      "category": "folk"
+    },
+    {
+      "id": "lepa-brena-cacak-cacak",
+      "artist": "Lepa Brena",
+      "title": "Čačak, Čačak",
+      "category": "folk"
+    },
+    {
+      "id": "dragana-mirkovic-luce-moje",
+      "artist": "Dragana Mirković",
+      "title": "Luče moje",
+      "category": "folk"
+    },
+    {
+      "id": "dragana-mirkovic-umirem-majko",
+      "artist": "Dragana Mirković",
+      "title": "Umirem majko",
+      "category": "folk"
+    },
+    {
+      "id": "mile-kitic-kraljica-trotoara",
+      "artist": "Mile Kitić",
+      "title": "Kraljica trotoara",
+      "category": "folk"
+    },
+    {
+      "id": "mile-kitic-plava-ciganko",
+      "artist": "Mile Kitić",
+      "title": "Plava ciganko",
+      "category": "folk"
+    },
+    {
+      "id": "seka-aleksic-aspirin",
+      "artist": "Seka Aleksić",
+      "title": "Aspirin",
+      "category": "folk"
+    },
+    {
+      "id": "seka-aleksic-crno-i-zlatno",
+      "artist": "Seka Aleksić",
+      "title": "Crno i zlatno",
+      "category": "folk"
+    },
+    {
+      "id": "aca-lukas-licna-karta",
+      "artist": "Aca Lukas",
+      "title": "Lična karta",
+      "category": "folk"
+    },
+    {
+      "id": "aca-lukas-kafana-na-balkanu",
+      "artist": "Aca Lukas",
+      "title": "Kafana na Balkanu",
+      "category": "folk"
+    },
+    {
+      "id": "sasa-matic-nije-ovo-moja-noc",
+      "artist": "Saša Matić",
+      "title": "Nije ovo moja noć",
+      "category": "folk"
+    },
+    {
+      "id": "sasa-matic-kralj-izgubljenih-stvari",
+      "artist": "Saša Matić",
+      "title": "Kralj izgubljenih stvari",
+      "category": "folk"
+    },
+    {
+      "id": "sasa-matic-kad-ljubav-zakasni",
+      "artist": "Saša Matić",
+      "title": "Kad ljubav zakasni",
+      "category": "folk"
+    },
+    {
+      "id": "dzej-nedelja",
+      "artist": "Džej",
+      "title": "Nedelja",
+      "category": "folk",
+      "artistAliases": ["Dzej Ramadanovski", "Džej Ramadanovski"]
+    },
+    {
+      "id": "dzej-sunce-ljubavi",
+      "artist": "Džej",
+      "title": "Sunce ljubavi",
+      "category": "folk",
+      "artistAliases": ["Dzej Ramadanovski", "Džej Ramadanovski"]
+    },
+    {
+      "id": "serif-konjevic-bijela-vjencanica",
+      "artist": "Šerif Konjević",
+      "title": "Bijela vjenčanica",
+      "category": "folk"
+    },
+    {
+      "id": "hanka-paldum-crne-kose",
+      "artist": "Hanka Paldum",
+      "title": "Crne kose",
+      "category": "folk"
+    },
+    {
+      "id": "semsa-suljakovic-pristajem-na-sve",
+      "artist": "Šemsa Suljaković",
+      "title": "Pristajem na sve",
+      "category": "folk"
+    },
+    {
+      "id": "semsa-suljakovic-zar-za-mene-nema-srece",
+      "artist": "Šemsa Suljaković",
+      "title": "Zar za mene nema sreće",
+      "category": "folk"
+    },
+    {
+      "id": "senidah-misici",
       "artist": "Senidah",
-      "title": "Vudu",
-      "category": "pop"
-    },
-    {
-      "artist": "Maya Berović",
-      "title": "Nisi bio tu",
-      "category": "pop"
-    },
-    {
-      "artist": "Jala Brat",
-      "title": "Magla",
+      "title": "Mišići",
       "category": "trap"
     },
     {
-      "artist": "Buba Corelli",
-      "title": "Aman",
-      "category": "trap"
-    },
-    {
-      "artist": "Rasta",
-      "title": "Moja bol",
-      "category": "trap"
-    },
-    {
-      "artist": "Devito",
-      "title": "Dođi",
-      "category": "trap"
-    },
-    {
+      "id": "senidah-slaana",
       "artist": "Senidah",
-      "title": "Vudu",
-      "category": "pop"
-    },
-    {
-      "artist": "Maya Berović",
-      "title": "Nisi bio tu",
-      "category": "pop"
-    },
-    {
-      "artist": "Jala Brat",
-      "title": "Magla",
+      "title": "Slađana",
       "category": "trap"
     },
     {
-      "artist": "Buba Corelli",
-      "title": "Aman",
-      "category": "trap"
-    },
-    {
-      "artist": "Rasta",
-      "title": "Moja bol",
-      "category": "trap"
-    },
-    {
-      "artist": "Devito",
-      "title": "Dođi",
-      "category": "trap"
-    },
-    {
+      "id": "senidah-behute",
       "artist": "Senidah",
-      "title": "Vudu",
-      "category": "pop"
+      "title": "Behute",
+      "category": "trap"
     },
     {
+      "id": "senidah-level",
+      "artist": "Senidah",
+      "title": "Level",
+      "category": "trap"
+    },
+    {
+      "id": "devito-uh",
+      "artist": "Devito",
+      "title": "Uh",
+      "category": "trap"
+    },
+    {
+      "id": "devito-aligatori",
+      "artist": "Devito",
+      "title": "Aligatori",
+      "category": "trap"
+    },
+    {
+      "id": "devito-marina",
+      "artist": "Devito",
+      "title": "Marina",
+      "category": "trap"
+    },
+    {
+      "id": "devito-vudu",
+      "artist": "Devito",
+      "title": "Vudu",
+      "category": "trap"
+    },
+    {
+      "id": "rasta-kavasaki",
+      "artist": "Rasta",
+      "title": "Kavasaki",
+      "category": "trap"
+    },
+    {
+      "id": "rasta-adio-amore",
+      "artist": "Rasta",
+      "title": "Adio amore",
+      "category": "trap"
+    },
+    {
+      "id": "rasta-kavali",
+      "artist": "Rasta",
+      "title": "Kavali",
+      "category": "trap"
+    },
+    {
+      "id": "jala-brat-ona-e",
+      "artist": "Jala Brat",
+      "title": "Ona'e",
+      "category": "trap"
+    },
+    {
+      "id": "jala-brat-klinka",
+      "artist": "Jala Brat",
+      "title": "Klinka",
+      "category": "trap"
+    },
+    {
+      "id": "buba-corelli-balenciaga",
+      "artist": "Buba Corelli",
+      "title": "Balenciaga",
+      "category": "trap"
+    },
+    {
+      "id": "buba-corelli-gluh-i-nijem",
+      "artist": "Buba Corelli",
+      "title": "Gluh i nijem",
+      "category": "trap"
+    },
+    {
+      "id": "nucci-bebo",
+      "artist": "Nucci",
+      "title": "Bebo",
+      "category": "trap"
+    },
+    {
+      "id": "nucci-automatti",
+      "artist": "Nucci",
+      "title": "Automatti",
+      "category": "trap"
+    },
+    {
+      "id": "voyage-tango",
+      "artist": "Voyage",
+      "title": "Tango",
+      "category": "trap"
+    },
+    {
+      "id": "voyage-gad",
+      "artist": "Voyage",
+      "title": "Gad",
+      "category": "trap"
+    },
+    {
+      "id": "breskvica-srecan-put",
+      "artist": "Breskvica",
+      "title": "Srećan put",
+      "category": "trap"
+    },
+    {
+      "id": "relja-mi-amor",
+      "artist": "Relja",
+      "title": "Mi Amor",
+      "category": "trap"
+    },
+    {
+      "id": "teodora-tresi-tresi",
+      "artist": "Teodora",
+      "title": "Tresi tresi",
+      "category": "trap"
+    },
+    {
+      "id": "maya-berovic-neka-stvar",
       "artist": "Maya Berović",
-      "title": "Nisi bio tu",
-      "category": "pop"
+      "title": "Neka stvar",
+      "category": "trap"
     }
   ]
-} 
+}

@@ -2,10 +2,13 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { matchTrack, safePreview, type ProviderTrack } from "../src/lib/audio";
 import type { Song } from "../src/lib/game";
 
-const songs: Song[] = JSON.parse(
+const catalog: Song[] = JSON.parse(
   readFileSync("src/data/songs.json", "utf8"),
 ).songs;
-const report: unknown[] = [];
+const songs = catalog.filter(
+  (song) => !song.audioUnavailable || process.argv.includes("--all"),
+);
+const report: Awaited<ReturnType<typeof audit>>[] = [];
 async function json(url: string) {
   const response = await fetch(url, { signal: AbortSignal.timeout(12000) });
   if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -23,13 +26,18 @@ async function audit(song: Song) {
     let found: ProviderTrack | undefined;
     for (const q of queries) {
       const data = await json(
-        `https://api.deezer.com/search?${new URLSearchParams({ q, limit: "15" })}`,
+        song.deezerId
+          ? `https://api.deezer.com/track/${song.deezerId}`
+          : `https://api.deezer.com/search?${new URLSearchParams({ q, limit: "15" })}`,
       );
-      candidates = [...candidates, ...(data.data ?? [])];
+      candidates = [
+        ...candidates,
+        ...(song.deezerId ? [data] : (data.data ?? [])),
+      ];
       found = candidates.find(
         (t) => matchTrack(song, t) && safePreview(t.preview!),
       );
-      if (found) break;
+      if (found || song.deezerId) break;
     }
     let playable = false;
     let status = 0;
@@ -90,6 +98,10 @@ async function main() {
       2,
     ),
   );
-  console.log(`Checked ${report.length} songs.`);
+  console.log(
+    `Checked ${report.length} songs; ${report.filter((row) => "playable" in row && row.playable).length} playable.`,
+  );
+  if (report.some((row) => !("playable" in row) || !row.playable))
+    process.exitCode = 1;
 }
 void main();

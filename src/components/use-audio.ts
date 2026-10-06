@@ -17,6 +17,7 @@ export function useAudio(
   const [playing, setPlaying] = useState(false);
   const [elapsed, setElapsed] = useState(0);
   const [retry, setRetry] = useState(0);
+  const refreshedSong = useRef<string | undefined>(undefined);
   const stop = useCallback(() => {
     generation.current++;
     ref.current?.pause();
@@ -34,7 +35,7 @@ export function useAudio(
     const controller = new AbortController();
     fetch(
       `/api/audio/${encodeURIComponent(songId)}${retry ? "?refresh=1" : ""}`,
-      { signal: controller.signal },
+      { signal: controller.signal, cache: "no-store" },
     )
       .then(async (response) => {
         const body = await response.json();
@@ -82,6 +83,14 @@ export function useAudio(
   }, [stop]);
   const playbackError = () => {
     stop();
+    // A preview can expire while the tab is idle. Refresh once without
+    // consuming an attempt; a persistent failure still exposes retry/replace.
+    if (songId && refreshedSong.current !== songId) {
+      refreshedSong.current = songId;
+      setStatus("loading");
+      setRetry((n) => n + 1);
+      return;
+    }
     setStatus("error");
     setError(
       "Isječak se ne može reproducirati. Pokušaj ponovo ili zamijeni pjesmu bez kazne.",

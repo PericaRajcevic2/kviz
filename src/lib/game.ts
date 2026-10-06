@@ -1,6 +1,6 @@
 export const DURATIONS = [1, 3, 5, 10, 15, 30] as const;
 export const POINTS = [100, 80, 60, 40, 20, 10] as const;
-export const CATALOG_VERSION = "v2";
+export const CATALOG_VERSION = "v2-audio-1";
 export const TIME_ZONE = "Europe/Sarajevo";
 export type Category = "pop" | "rock" | "folk" | "trap";
 export type Pack = "mix" | Category;
@@ -13,6 +13,7 @@ export type Song = {
   artistAliases?: string[];
   deezerId?: number;
   audioUrl?: string;
+  audioUnavailable?: boolean;
 };
 export type Guess = {
   text: string;

@@ -1,0 +1,24 @@
+name: Audit current audio catalog
+on:
+  workflow_dispatch:
+  push:
+    branches: [feat/balkan-kviz-v2]
+    paths: [scripts/audit-audio.ts, .github/workflows/audio-audit.yml]
+permissions:
+  contents: read
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: node --import tsx scripts/audit-audio.ts
+      - uses: actions/upload-artifact@v4
+        with:
+          name: audio-audit
+          path: audio-audit.json

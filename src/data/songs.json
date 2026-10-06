@@ -1,529 +1,1089 @@
 {
   "songs": [
     {
-      "artist": "Dino Merlin",
-      "title": "Sve je laža",
-      "category": "pop"
-    },
-    {
-      "artist": "Zdravko Čolić",
-      "title": "Ti si mi u krvi",
-      "category": "pop"
-    },
-    {
-      "artist": "Bijelo Dugme",
-      "title": "Ako ima boga",
-      "category": "rock"
-    },
-    {
-      "artist": "Ceca",
-      "title": "Kukavica",
-      "category": "folk"
-    },
-    {
-      "artist": "Severina",
-      "title": "Moj je život moja stvar",
-      "category": "pop"
-    },
-    {
-      "artist": "Jelena Rozga",
-      "title": "Oprosti mala",
-      "category": "pop"
-    },
-    {
-      "artist": "Halid Bešlić",
-      "title": "Miljacka",
-      "category": "folk"
-    },
-    {
-      "artist": "Seka Aleksić",
-      "title": "Bomba",
-      "category": "pop"
-    },
-    {
-      "artist": "Mile Kitić",
-      "title": "Oči boje meda",
-      "category": "folk"
-    },
-    {
-      "artist": "Lepa Brena",
-      "title": "Jugoslovenka",
-      "category": "folk"
-    },
-    {
-      "artist": "Dragana Mirković",
-      "title": "Ostani",
-      "category": "folk"
-    },
-    {
-      "artist": "Zeljko Joksimovic",
-      "title": "Lane moje",
-      "category": "folk"
-    },
-    {
-      "artist": "Marija Šerifović",
-      "title": "Molitva",
-      "category": "pop"
-    },
-    {
-      "artist": "Željko Samardžić",
-      "title": "Sve bih dao",
-      "category": "folk"
-    },
-    {
-      "artist": "Dino Merlin",
-      "title": "Supermen",
-      "category": "pop"
-    },
-    {
-      "artist": "Zdravko Čolić",
-      "title": "Zagrli me",
-      "category": "pop"
-    },
-    {
-      "artist": "Bijelo Dugme",
-      "title": "Lična karta",
-      "category": "rock"
-    },
-    {
-      "artist": "Ceca",
-      "title": "Nevaljala",
-      "category": "folk"
-    },
-    {
-      "artist": "Jelena Rozga",
-      "title": "Bižuterija",
-      "category": "pop"
-    },
-    {
-      "artist": "Halid Bešlić",
-      "title": "Romanija",
-      "category": "folk"
-    },
-    {
-      "artist": "Seka Aleksić",
-      "title": "Sve bih dala",
-      "category": "pop"
-    },
-    {
-      "artist": "Mile Kitić",
-      "title": "Sve bih dao",
-      "category": "folk"
-    },
-    {
-      "artist": "Lepa Brena",
-      "title": "Čačak, Čačak",
-      "category": "folk"
-    },
-    {
-      "artist": "Dragana Mirković",
-      "title": "Sve bih dala",
-      "category": "folk"
-    },
-    {
-      "artist": "Zeljko Joksimovic",
-      "title": "Nije ljubav stvar",
-      "category": "pop"
-    },
-    {
-      "artist": "Marija Šerifović",
-      "title": "Nisam anđeo",
-      "category": "pop"
-    },
-    {
-      "artist": "Željko Samardžić",
-      "title": "Sve bih dao",
-      "category": "folk"
-    },
-    {
-      "artist": "Dino Merlin",
-      "title": "Burek",
-      "category": "pop"
-    },
-    {
-      "artist": "Zdravko Čolić",
-      "title": "Ti si mi u krvi",
-      "category": "pop"
-    },
-    {
-      "artist": "Ceca",
-      "title": "Zabranjeni grad",
-      "category": "folk"
-    },
-    {
-      "artist": "Lepa Brena",
-      "title": "Mile voli disko",
-      "category": "folk"
-    },
-    {
+      "id": "dino-merlin-kad-si-rekla-da-me-volis",
       "artist": "Dino Merlin",
       "title": "Kad si rekla da me voliš",
-      "category": "pop"
+      "category": "pop",
+      "deezerId": 23638701
     },
     {
-      "artist": "Zdravko Čolić",
-      "title": "Ona spava",
-      "category": "pop"
+      "id": "dino-merlin-sve-je-laz",
+      "artist": "Dino Merlin",
+      "title": "Sve je laž",
+      "category": "pop",
+      "aliases": ["Sve je laža"],
+      "deezerId": 1350230752
     },
     {
-      "artist": "Bijelo Dugme",
-      "title": "Sanjao sam noćas da te nemam",
-      "category": "rock"
-    },
-    {
-      "artist": "Severina",
-      "title": "Dalmatinka",
-      "category": "pop"
-    },
-    {
-      "artist": "Jelena Rozga",
-      "title": "Gospe moja",
-      "category": "pop"
-    },
-    {
-      "artist": "Halid Bešlić",
-      "title": "Ne zovi me, ne traži me",
-      "category": "folk"
-    },
-    {
-      "artist": "Seka Aleksić",
-      "title": "Sve bih dala",
-      "category": "pop"
-    },
-    {
-      "artist": "Mile Kitić",
-      "title": "Oči boje meda",
-      "category": "folk"
-    },
-    {
-      "artist": "Dragana Mirković",
-      "title": "Ostani",
-      "category": "folk"
-    },
-    {
-      "artist": "Zeljko Joksimovic",
-      "title": "Leđa o leđa",
-      "category": "pop"
-    },
-    {
-      "artist": "Marija Šerifović",
-      "title": "Molitva",
-      "category": "pop"
-    },
-    {
-      "artist": "Željko Samardžić",
-      "title": "Sve bih dao",
-      "category": "folk"
-    },
-    {
+      "id": "dino-merlin-burek",
       "artist": "Dino Merlin",
       "title": "Burek",
-      "category": "pop"
+      "category": "pop",
+      "deezerId": 65789474
     },
     {
+      "id": "dino-merlin-kad-covjek-voli-zenu",
+      "artist": "Dino Merlin",
+      "title": "Kad čovjek voli ženu",
+      "category": "pop",
+      "deezerId": 1350230832
+    },
+    {
+      "id": "dino-merlin-da-sutis",
+      "artist": "Dino Merlin",
+      "title": "Da šutiš",
+      "category": "pop",
+      "deezerId": 23638421
+    },
+    {
+      "id": "dino-merlin-deset-mlaa",
+      "artist": "Dino Merlin",
+      "title": "Deset mlađa",
+      "category": "pop",
+      "deezerId": 1350230872
+    },
+    {
+      "id": "dino-merlin-sredinom",
+      "artist": "Dino Merlin",
+      "title": "Sredinom",
+      "category": "pop",
+      "deezerId": 1350230762
+    },
+    {
+      "id": "dino-merlin-bosnom-behar-probeharao",
+      "artist": "Dino Merlin",
+      "title": "Bosnom behar probeharao",
+      "category": "pop",
+      "deezerId": 91531054
+    },
+    {
+      "id": "zdravko-colic-ti-si-mi-u-krvi",
       "artist": "Zdravko Čolić",
       "title": "Ti si mi u krvi",
-      "category": "pop"
+      "category": "pop",
+      "deezerId": 2617677792
     },
     {
-      "artist": "Ceca",
-      "title": "Nevaljala",
-      "category": "folk"
-    },
-    {
-      "artist": "Lepa Brena",
-      "title": "Jugoslovenka",
-      "category": "folk"
-    },
-    {
-      "artist": "Dino Merlin",
-      "title": "Supermen",
-      "category": "pop"
-    },
-    {
+      "id": "zdravko-colic-zagrli-me",
       "artist": "Zdravko Čolić",
       "title": "Zagrli me",
-      "category": "pop"
+      "category": "pop",
+      "deezerId": 2998322391
     },
     {
-      "artist": "Bijelo Dugme",
-      "title": "Lična karta",
-      "category": "rock"
-    },
-    {
-      "artist": "Severina",
-      "title": "Moj je život moja stvar",
-      "category": "pop"
-    },
-    {
-      "artist": "Jelena Rozga",
-      "title": "Bižuterija",
-      "category": "pop"
-    },
-    {
-      "artist": "Halid Bešlić",
-      "title": "Romanija",
-      "category": "folk"
-    },
-    {
-      "artist": "Seka Aleksić",
-      "title": "Sve bih dala",
-      "category": "pop"
-    },
-    {
-      "artist": "Mile Kitić",
-      "title": "Sve bih dao",
-      "category": "folk"
-    },
-    {
-      "artist": "Dragana Mirković",
-      "title": "Sve bih dala",
-      "category": "folk"
-    },
-    {
-      "artist": "Zeljko Joksimovic",
-      "title": "Nije ljubav stvar",
-      "category": "pop"
-    },
-    {
-      "artist": "Marija Šerifović",
-      "title": "Nisam anđeo",
-      "category": "pop"
-    },
-    {
-      "artist": "Željko Samardžić",
-      "title": "Sve bih dao",
-      "category": "folk"
-    },
-    {
-      "artist": "Dino Merlin",
-      "title": "Burek",
-      "category": "pop"
-    },
-    {
-      "artist": "Zdravko Čolić",
-      "title": "Ti si mi u krvi",
-      "category": "pop"
-    },
-    {
-      "artist": "Ceca",
-      "title": "Dokaz",
-      "category": "folk"
-    },
-    {
-      "artist": "Lepa Brena",
-      "title": "Ja nemam drugi dom",
-      "category": "folk"
-    },
-    {
-      "artist": "Dino Merlin",
-      "title": "Da ti kažem šta mi je",
-      "category": "pop"
-    },
-    {
+      "id": "zdravko-colic-pusti-pusti-modu",
       "artist": "Zdravko Čolić",
       "title": "Pusti, pusti modu",
-      "category": "pop"
+      "category": "pop",
+      "deezerId": 3873062881
     },
     {
-      "artist": "Bijelo Dugme",
-      "title": "Đurđevdan",
-      "category": "rock"
-    },
-    {
-      "artist": "Severina",
-      "title": "Uno momento",
-      "category": "pop"
-    },
-    {
-      "artist": "Jelena Rozga",
-      "title": "Sunce",
-      "category": "pop"
-    },
-    {
-      "artist": "Halid Bešlić",
-      "title": "Prvi poljubac",
-      "category": "folk"
-    },
-    {
-      "artist": "Zeljko Joksimovic",
-      "title": "Oro",
-      "category": "folk"
-    },
-    {
-      "artist": "Ceca",
-      "title": "Volim te",
-      "category": "folk"
-    },
-    {
-      "artist": "Lepa Brena",
-      "title": "Čik pogodi ko sam ja",
-      "category": "folk"
-    },
-    {
-      "artist": "Dino Merlin",
-      "title": "Sve dok sanjaš",
-      "category": "pop"
-    },
-    {
+      "id": "zdravko-colic-produzi-dalje",
       "artist": "Zdravko Čolić",
-      "title": "Pogledaj u nebo",
-      "category": "pop"
+      "title": "Produži dalje",
+      "category": "pop",
+      "deezerId": 2995450641
     },
     {
-      "artist": "Bijelo Dugme",
-      "title": "Kad bi bio bijelo dugme",
-      "category": "rock"
+      "id": "zdravko-colic-pjevam-danju-pjevam-nocu",
+      "artist": "Zdravko Čolić",
+      "title": "Pjevam danju, pjevam noću",
+      "category": "pop",
+      "deezerId": 2995450591
     },
     {
+      "id": "zdravko-colic-cija-je-ono-zvijezda",
+      "artist": "Zdravko Čolić",
+      "title": "Čija je ono zvijezda",
+      "category": "pop",
+      "deezerId": 2616951802
+    },
+    {
+      "id": "severina-gas-gas",
       "artist": "Severina",
       "title": "Gas, gas",
-      "category": "pop"
+      "category": "pop",
+      "audioUnavailable": true
     },
     {
+      "id": "severina-dalmatinka",
+      "artist": "Severina",
+      "title": "Dalmatinka",
+      "category": "pop",
+      "deezerId": 933519892
+    },
+    {
+      "id": "severina-djevojka-sa-sela",
+      "artist": "Severina",
+      "title": "Djevojka sa sela",
+      "category": "pop",
+      "deezerId": 3526219101
+    },
+    {
+      "id": "severina-prijateljice",
+      "artist": "Severina",
+      "title": "Prijateljice",
+      "category": "pop",
+      "deezerId": 933519942
+    },
+    {
+      "id": "severina-virujen-u-te",
+      "artist": "Severina",
+      "title": "Virujen u te",
+      "category": "pop",
+      "deezerId": 933520082
+    },
+    {
+      "id": "jelena-rozga-bizuterija",
       "artist": "Jelena Rozga",
-      "title": "Sve bih dala",
-      "category": "pop"
+      "title": "Bižuterija",
+      "category": "pop",
+      "deezerId": 719863962
     },
     {
-      "artist": "Halid Bešlić",
-      "title": "Sarajevo",
-      "category": "folk"
+      "id": "jelena-rozga-nirvana",
+      "artist": "Jelena Rozga",
+      "title": "Nirvana",
+      "category": "pop",
+      "deezerId": 2998009921
     },
     {
-      "artist": "Zeljko Joksimovic",
+      "id": "jelena-rozga-gospe-moja",
+      "artist": "Jelena Rozga",
+      "title": "Gospe moja",
+      "category": "pop",
+      "deezerId": 2995422851
+    },
+    {
+      "id": "jelena-rozga-razmazena",
+      "artist": "Jelena Rozga",
+      "title": "Razmažena",
+      "category": "pop",
+      "deezerId": 3018913411
+    },
+    {
+      "id": "zeljko-joksimovic-lane-moje",
+      "artist": "Željko Joksimović",
+      "title": "Lane moje",
+      "category": "pop",
+      "deezerId": 543692512
+    },
+    {
+      "id": "zeljko-joksimovic-nije-ljubav-stvar",
+      "artist": "Željko Joksimović",
       "title": "Nije ljubav stvar",
-      "category": "pop"
+      "category": "pop",
+      "deezerId": 1989365287
     },
     {
-      "artist": "Ceca",
-      "title": "Cvetak zanovetak",
-      "category": "folk"
+      "id": "zeljko-joksimovic-lea-o-lea",
+      "artist": "Željko Joksimović",
+      "title": "Leđa o leđa",
+      "category": "pop",
+      "deezerId": 543692502
     },
     {
-      "artist": "Lepa Brena",
-      "title": "Miki Mićo",
-      "category": "folk"
+      "id": "zeljko-joksimovic-ludak-kao-ja",
+      "artist": "Željko Joksimović",
+      "title": "Ludak kao ja",
+      "category": "pop",
+      "deezerId": 1989376597
     },
     {
-      "artist": "Dino Merlin",
-      "title": "Kad si rekla da me voliš",
-      "category": "pop"
+      "id": "marija-serifovic-molitva",
+      "artist": "Marija Šerifović",
+      "title": "Molitva",
+      "category": "pop",
+      "deezerId": 1841884507
     },
     {
-      "artist": "Zdravko Čolić",
-      "title": "Ljubav je samo riječ",
-      "category": "pop"
+      "id": "marija-serifovic-pametna-i-luda",
+      "artist": "Marija Šerifović",
+      "title": "Pametna i luda",
+      "category": "pop",
+      "deezerId": 446980872
     },
     {
+      "id": "sergej-cetkovic-pogledi-u-tami",
+      "artist": "Sergej Ćetković",
+      "title": "Pogledi u tami",
+      "category": "pop",
+      "deezerId": 529454631
+    },
+    {
+      "id": "sergej-cetkovic-korov",
+      "artist": "Sergej Ćetković",
+      "title": "Korov",
+      "category": "pop",
+      "deezerId": 3014234791
+    },
+    {
+      "id": "tose-proeski-cija-si",
+      "artist": "Toše Proeski",
+      "title": "Čija si",
+      "category": "pop",
+      "deezerId": 543699582
+    },
+    {
+      "id": "tose-proeski-igra-bez-granica",
+      "artist": "Toše Proeski",
+      "title": "Igra bez granica",
+      "category": "pop",
+      "deezerId": 529457751
+    },
+    {
+      "id": "tose-proeski-pratim-te",
+      "artist": "Toše Proeski",
+      "title": "Pratim te",
+      "category": "pop",
+      "deezerId": 543699482
+    },
+    {
+      "id": "tose-proeski-srce-nije-kamen",
+      "artist": "Toše Proeski",
+      "title": "Srce nije kamen",
+      "category": "pop",
+      "deezerId": 543699802
+    },
+    {
+      "id": "oliver-dragojevic-cesarica",
+      "artist": "Oliver Dragojević",
+      "title": "Cesarica",
+      "category": "pop",
+      "deezerId": 913359072
+    },
+    {
+      "id": "oliver-dragojevic-moj-lipi-anele",
+      "artist": "Oliver Dragojević",
+      "title": "Moj lipi anđele",
+      "category": "pop",
+      "deezerId": 3021163041
+    },
+    {
+      "id": "oliver-dragojevic-trag-u-beskraju",
+      "artist": "Oliver Dragojević",
+      "title": "Trag u beskraju",
+      "category": "pop",
+      "deezerId": 3021162991
+    },
+    {
+      "id": "oliver-dragojevic-vjeruj-u-ljubav",
+      "artist": "Oliver Dragojević",
+      "title": "Vjeruj u ljubav",
+      "category": "pop",
+      "deezerId": 3021163071
+    },
+    {
+      "id": "gibonni-libar",
+      "artist": "Gibonni",
+      "title": "Libar",
+      "category": "pop",
+      "audioUnavailable": true
+    },
+    {
+      "id": "gibonni-mirakul",
+      "artist": "Gibonni",
+      "title": "Mirakul",
+      "category": "pop",
+      "audioUnavailable": true
+    },
+    {
+      "id": "gibonni-oprosti",
+      "artist": "Gibonni",
+      "title": "Oprosti",
+      "category": "pop",
+      "audioUnavailable": true
+    },
+    {
+      "id": "nina-badric-dani-i-godine",
+      "artist": "Nina Badrić",
+      "title": "Dani i godine",
+      "category": "pop",
+      "deezerId": 1563640762
+    },
+    {
+      "id": "nina-badric-carobno-jutro",
+      "artist": "Nina Badrić",
+      "title": "Čarobno jutro",
+      "category": "pop",
+      "audioUnavailable": true
+    },
+    {
+      "id": "petar-graso-ako-te-pitaju",
+      "artist": "Petar Grašo",
+      "title": "Ako te pitaju",
+      "category": "pop",
+      "deezerId": 1014270642
+    },
+    {
+      "id": "petar-graso-ko-nam-brani",
+      "artist": "Petar Grašo",
+      "title": "Ko nam brani",
+      "category": "pop",
+      "deezerId": 2994381211
+    },
+    {
+      "id": "toni-cetinski-blago-onom-tko-te-ima",
+      "artist": "Toni Cetinski",
+      "title": "Blago onom tko te ima",
+      "category": "pop",
+      "artistAliases": ["Tony Cetinski"],
+      "deezerId": 66429213
+    },
+    {
+      "id": "toni-cetinski-kad-zena-zavoli",
+      "artist": "Toni Cetinski",
+      "title": "Kad žena zavoli",
+      "category": "pop",
+      "artistAliases": ["Tony Cetinski"],
+      "deezerId": 66429261
+    },
+    {
+      "id": "vanna-kao-da-me-nema",
+      "artist": "Vanna",
+      "title": "Kao da me nema",
+      "category": "pop",
+      "deezerId": 2995046491
+    },
+    {
+      "id": "magazin-tri-sam-ti-zime-saptala-ime",
+      "artist": "Magazin",
+      "title": "Tri sam ti zime šaptala ime",
+      "category": "pop",
+      "deezerId": 2994897121
+    },
+    {
+      "id": "magazin-put-putujem",
+      "artist": "Magazin",
+      "title": "Put putujem",
+      "category": "pop",
+      "deezerId": 3016783891
+    },
+    {
+      "id": "hari-mata-hari-lejla",
+      "artist": "Hari Mata Hari",
+      "title": "Lejla",
+      "category": "pop",
+      "deezerId": 2155165937
+    },
+    {
+      "id": "hari-mata-hari-strah-me-da-te-volim",
+      "artist": "Hari Mata Hari",
+      "title": "Strah me da te volim",
+      "category": "pop",
+      "deezerId": 3021048591
+    },
+    {
+      "id": "bijelo-dugme-urevdan",
+      "artist": "Bijelo Dugme",
+      "title": "Đurđevdan",
+      "category": "rock",
+      "aliases": ["Đurđevdan je a ja nisam s onom koju volim"],
+      "deezerId": 1097548912
+    },
+    {
+      "id": "bijelo-dugme-ako-ima-boga",
       "artist": "Bijelo Dugme",
       "title": "Ako ima boga",
-      "category": "rock"
+      "category": "rock",
+      "audioUnavailable": true
     },
     {
-      "artist": "Severina",
-      "title": "Moja stvar",
-      "category": "pop"
+      "id": "bijelo-dugme-sanjao-sam-nocas-da-te-nemam",
+      "artist": "Bijelo Dugme",
+      "title": "Sanjao sam noćas da te nemam",
+      "category": "rock",
+      "deezerId": 2994244211
     },
     {
-      "artist": "Jelena Rozga",
-      "title": "Oprosti mala",
-      "category": "pop"
+      "id": "bijelo-dugme-lipe-cvatu",
+      "artist": "Bijelo Dugme",
+      "title": "Lipe cvatu",
+      "category": "rock",
+      "aliases": ["Lipe cvatu, sve je isto ko i lani"],
+      "deezerId": 69403518
     },
     {
+      "id": "bijelo-dugme-ruzica-si-bila",
+      "artist": "Bijelo Dugme",
+      "title": "Ružica si bila",
+      "category": "rock",
+      "deezerId": 854933632
+    },
+    {
+      "id": "bijelo-dugme-ne-spavaj-mala-moja-muzika-dok-svira",
+      "artist": "Bijelo Dugme",
+      "title": "Ne spavaj mala moja muzika dok svira",
+      "category": "rock",
+      "deezerId": 2994231641
+    },
+    {
+      "id": "parni-valjak-sve-jos-mirise-na-nju",
+      "artist": "Parni Valjak",
+      "title": "Sve još miriše na nju",
+      "category": "rock",
+      "deezerId": 928569602
+    },
+    {
+      "id": "parni-valjak-jesen-u-meni",
+      "artist": "Parni Valjak",
+      "title": "Jesen u meni",
+      "category": "rock",
+      "deezerId": 3020609441
+    },
+    {
+      "id": "parni-valjak-lutka-za-bal",
+      "artist": "Parni Valjak",
+      "title": "Lutka za bal",
+      "category": "rock",
+      "deezerId": 2995373991
+    },
+    {
+      "id": "parni-valjak-ugasi-me",
+      "artist": "Parni Valjak",
+      "title": "Ugasi me",
+      "category": "rock",
+      "deezerId": 3298356691
+    },
+    {
+      "id": "prljavo-kazaliste-heroj-ulice",
+      "artist": "Prljavo Kazalište",
+      "title": "Heroj ulice",
+      "category": "rock",
+      "deezerId": 2995527501
+    },
+    {
+      "id": "prljavo-kazaliste-mojoj-majci",
+      "artist": "Prljavo Kazalište",
+      "title": "Mojoj majci",
+      "category": "rock",
+      "aliases": ["Ruža hrvatska"],
+      "deezerId": 2995527581
+    },
+    {
+      "id": "prljavo-kazaliste-tu-noc-kad-si-se-udavala",
+      "artist": "Prljavo Kazalište",
+      "title": "Tu noć kad si se udavala",
+      "category": "rock",
+      "deezerId": 142624060
+    },
+    {
+      "id": "prljavo-kazaliste-marina",
+      "artist": "Prljavo Kazalište",
+      "title": "Marina",
+      "category": "rock",
+      "deezerId": 2995527631
+    },
+    {
+      "id": "crvena-jabuka-tugo-nesreco",
+      "artist": "Crvena Jabuka",
+      "title": "Tugo, nesrećo",
+      "category": "rock",
+      "deezerId": 929898322
+    },
+    {
+      "id": "crvena-jabuka-ima-nesto-od-srca-do-srca",
+      "artist": "Crvena Jabuka",
+      "title": "Ima nešto od srca do srca",
+      "category": "rock",
+      "deezerId": 3656629032
+    },
+    {
+      "id": "crvena-jabuka-bjezi-kiso-s-prozora",
+      "artist": "Crvena Jabuka",
+      "title": "Bježi kišo s prozora",
+      "category": "rock",
+      "deezerId": 930242932
+    },
+    {
+      "id": "plavi-orkestar-bolje-biti-pijan-nego-star",
+      "artist": "Plavi Orkestar",
+      "title": "Bolje biti pijan nego star",
+      "category": "rock",
+      "deezerId": 2995426691
+    },
+    {
+      "id": "plavi-orkestar-suada",
+      "artist": "Plavi Orkestar",
+      "title": "Suada",
+      "category": "rock",
+      "deezerId": 2995522181
+    },
+    {
+      "id": "plavi-orkestar-ako-su-to-samo-bile-lazi",
+      "artist": "Plavi Orkestar",
+      "title": "Ako su to samo bile laži",
+      "category": "rock",
+      "deezerId": 1403321772
+    },
+    {
+      "id": "bajaga-instruktori-tisina",
+      "artist": "Bajaga & Instruktori",
+      "title": "Tišina",
+      "category": "rock",
+      "artistAliases": ["Bajaga i Instruktori"],
+      "deezerId": 3265454081
+    },
+    {
+      "id": "bajaga-instruktori-moji-drugovi",
+      "artist": "Bajaga & Instruktori",
+      "title": "Moji drugovi",
+      "category": "rock",
+      "artistAliases": ["Bajaga i Instruktori"],
+      "deezerId": 2619832862
+    },
+    {
+      "id": "bajaga-instruktori-zazmuri",
+      "artist": "Bajaga & Instruktori",
+      "title": "Zažmuri",
+      "category": "rock",
+      "artistAliases": ["Bajaga i Instruktori"],
+      "deezerId": 2382025165
+    },
+    {
+      "id": "azra-balkan",
+      "artist": "Azra",
+      "title": "Balkan",
+      "category": "rock",
+      "audioUnavailable": true
+    },
+    {
+      "id": "azra-a-sta-da-radim",
+      "artist": "Azra",
+      "title": "A šta da radim",
+      "category": "rock",
+      "audioUnavailable": true
+    },
+    {
+      "id": "indexi-bacila-je-sve-niz-rijeku",
+      "artist": "Indexi",
+      "title": "Bacila je sve niz rijeku",
+      "category": "rock",
+      "deezerId": 3803383772
+    },
+    {
+      "id": "indexi-sanjam",
+      "artist": "Indexi",
+      "title": "Sanjam",
+      "category": "rock",
+      "deezerId": 3020970301
+    },
+    {
+      "id": "zabranjeno-pusenje-zenica-blues",
+      "artist": "Zabranjeno Pušenje",
+      "title": "Zenica blues",
+      "category": "rock",
+      "deezerId": 3363703801
+    },
+    {
+      "id": "zabranjeno-pusenje-jugo-45",
+      "artist": "Zabranjeno Pušenje",
+      "title": "Jugo 45",
+      "category": "rock",
+      "deezerId": 1635640942
+    },
+    {
+      "id": "riblja-corba-pogledaj-dom-svoj-anele",
+      "artist": "Riblja Čorba",
+      "title": "Pogledaj dom svoj, anđele",
+      "category": "rock",
+      "deezerId": 3030811051
+    },
+    {
+      "id": "riblja-corba-lutka-sa-naslovne-strane",
+      "artist": "Riblja Čorba",
+      "title": "Lutka sa naslovne strane",
+      "category": "rock",
+      "deezerId": 2464031485
+    },
+    {
+      "id": "divlje-jagode-motori",
+      "artist": "Divlje Jagode",
+      "title": "Motori",
+      "category": "rock",
+      "deezerId": 3016872101
+    },
+    {
+      "id": "divlje-jagode-jedina-moja",
+      "artist": "Divlje Jagode",
+      "title": "Jedina moja",
+      "category": "rock",
+      "deezerId": 2995072161
+    },
+    {
+      "id": "kerber-bolje-da-sam-druge-ljubio",
+      "artist": "Kerber",
+      "title": "Bolje da sam druge ljubio",
+      "category": "rock",
+      "deezerId": 1523410932
+    },
+    {
+      "id": "halid-beslic-miljacka",
       "artist": "Halid Bešlić",
       "title": "Miljacka",
-      "category": "folk"
+      "category": "folk",
+      "audioUnavailable": true
     },
     {
-      "artist": "Jala Brat",
-      "title": "Magla",
-      "category": "trap"
+      "id": "halid-beslic-romanija",
+      "artist": "Halid Bešlić",
+      "title": "Romanija",
+      "category": "folk",
+      "deezerId": 2738738641
     },
     {
-      "artist": "Buba Corelli",
-      "title": "Aman",
-      "category": "trap"
+      "id": "halid-beslic-prvi-poljubac",
+      "artist": "Halid Bešlić",
+      "title": "Prvi poljubac",
+      "category": "folk",
+      "deezerId": 78729892
     },
     {
-      "artist": "Rasta",
-      "title": "Moja bol",
-      "category": "trap"
+      "id": "halid-beslic-ja-bez-tebe-ne-mogu-da-zivim",
+      "artist": "Halid Bešlić",
+      "title": "Ja bez tebe ne mogu da živim",
+      "category": "folk",
+      "deezerId": 2738726981
     },
     {
-      "artist": "Devito",
-      "title": "Dođi",
-      "category": "trap"
+      "id": "halid-beslic-u-meni-jesen-je",
+      "artist": "Halid Bešlić",
+      "title": "U meni jesen je",
+      "category": "folk",
+      "deezerId": 78729886
     },
     {
+      "id": "haris-dzinovic-i-tebe-sam-sit-kafano",
+      "artist": "Haris Džinović",
+      "title": "I tebe sam sit kafano",
+      "category": "folk",
+      "deezerId": 471231592
+    },
+    {
+      "id": "haris-dzinovic-mustuluk",
+      "artist": "Haris Džinović",
+      "title": "Muštuluk",
+      "category": "folk",
+      "aliases": ["Mustuluk (2021)"],
+      "deezerId": 1353839962
+    },
+    {
+      "id": "haris-dzinovic-laze-mjesec",
+      "artist": "Haris Džinović",
+      "title": "Laže mjesec",
+      "category": "folk",
+      "deezerId": 2097240367
+    },
+    {
+      "id": "haris-dzinovic-kako-mi-nedostajes",
+      "artist": "Haris Džinović",
+      "title": "Kako mi nedostaješ",
+      "category": "folk",
+      "deezerId": 1210891452
+    },
+    {
+      "id": "saban-saulic-doi-da-ostarimo-zajedno",
+      "artist": "Šaban Šaulić",
+      "title": "Dođi da ostarimo zajedno",
+      "category": "folk",
+      "deezerId": 68038435
+    },
+    {
+      "id": "saban-saulic-s-namerom-dooh-u-veliki-grad",
+      "artist": "Šaban Šaulić",
+      "title": "S namerom dođoh u veliki grad",
+      "category": "folk",
+      "deezerId": 2157219487
+    },
+    {
+      "id": "saban-saulic-kralj-boema",
+      "artist": "Šaban Šaulić",
+      "title": "Kralj boema",
+      "category": "folk",
+      "deezerId": 550221062
+    },
+    {
+      "id": "toma-zdravkovic-danka",
+      "artist": "Toma Zdravković",
+      "title": "Danka",
+      "category": "folk",
+      "deezerId": 2998841941
+    },
+    {
+      "id": "toma-zdravkovic-dotak-o-sam-dno-zivota",
+      "artist": "Toma Zdravković",
+      "title": "Dotak'o sam dno života",
+      "category": "folk",
+      "aliases": ["Dotakao sam dno života"],
+      "deezerId": 67370212
+    },
+    {
+      "id": "toma-zdravkovic-kafana-je-moja-sudbina",
+      "artist": "Toma Zdravković",
+      "title": "Kafana je moja sudbina",
+      "category": "folk",
+      "audioUnavailable": true
+    },
+    {
+      "id": "toma-zdravkovic-za-ljiljanu",
+      "artist": "Toma Zdravković",
+      "title": "Za Ljiljanu",
+      "category": "folk",
+      "deezerId": 2994369061
+    },
+    {
+      "id": "sinan-sakic-ej-od-kad-sam-se-rodio",
+      "artist": "Sinan Sakić",
+      "title": "Ej, od kad sam se rodio",
+      "category": "folk",
+      "deezerId": 1302228482
+    },
+    {
+      "id": "sinan-sakic-lepa-do-bola",
+      "artist": "Sinan Sakić",
+      "title": "Lepa do bola",
+      "category": "folk",
+      "deezerId": 1148816532
+    },
+    {
+      "id": "sinan-sakic-sudbina-me-na-put-salje",
+      "artist": "Sinan Sakić",
+      "title": "Sudbina me na put šalje",
+      "category": "folk",
+      "deezerId": 1302228782
+    },
+    {
+      "id": "ceca-kukavica",
+      "artist": "Ceca",
+      "title": "Kukavica",
+      "category": "folk",
+      "deezerId": 1555891922
+    },
+    {
+      "id": "ceca-beograd",
+      "artist": "Ceca",
+      "title": "Beograd",
+      "category": "folk",
+      "deezerId": 3918486731
+    },
+    {
+      "id": "ceca-lepi-grome-moj",
+      "artist": "Ceca",
+      "title": "Lepi grome moj",
+      "category": "folk",
+      "deezerId": 1556613872
+    },
+    {
+      "id": "ceca-zabranjeni-grad",
+      "artist": "Ceca",
+      "title": "Zabranjeni grad",
+      "category": "folk",
+      "deezerId": 1547998502
+    },
+    {
+      "id": "lepa-brena-jugoslovenka",
+      "artist": "Lepa Brena",
+      "title": "Jugoslovenka",
+      "category": "folk",
+      "deezerId": 995385502
+    },
+    {
+      "id": "lepa-brena-mile-voli-disko",
+      "artist": "Lepa Brena",
+      "title": "Mile voli disko",
+      "category": "folk",
+      "deezerId": 473573612
+    },
+    {
+      "id": "lepa-brena-cacak-cacak",
+      "artist": "Lepa Brena",
+      "title": "Čačak, Čačak",
+      "category": "folk",
+      "deezerId": 4184367452
+    },
+    {
+      "id": "dragana-mirkovic-luce-moje",
+      "artist": "Dragana Mirković",
+      "title": "Luče moje",
+      "category": "folk",
+      "deezerId": 2799927932
+    },
+    {
+      "id": "dragana-mirkovic-umirem-majko",
+      "artist": "Dragana Mirković",
+      "title": "Umirem majko",
+      "category": "folk",
+      "deezerId": 2842356582
+    },
+    {
+      "id": "mile-kitic-kraljica-trotoara",
+      "artist": "Mile Kitić",
+      "title": "Kraljica trotoara",
+      "category": "folk",
+      "deezerId": 697502252
+    },
+    {
+      "id": "mile-kitic-plava-ciganko",
+      "artist": "Mile Kitić",
+      "title": "Plava ciganko",
+      "category": "folk",
+      "aliases": ["Plava ciganka"],
+      "deezerId": 468020502
+    },
+    {
+      "id": "seka-aleksic-aspirin",
+      "artist": "Seka Aleksić",
+      "title": "Aspirin",
+      "category": "folk",
+      "deezerId": 458482352
+    },
+    {
+      "id": "seka-aleksic-crno-i-zlatno",
+      "artist": "Seka Aleksić",
+      "title": "Crno i zlatno",
+      "category": "folk",
+      "deezerId": 457443222
+    },
+    {
+      "id": "aca-lukas-licna-karta",
+      "artist": "Aca Lukas",
+      "title": "Lična karta",
+      "category": "folk",
+      "deezerId": 898922532
+    },
+    {
+      "id": "aca-lukas-kafana-na-balkanu",
+      "artist": "Aca Lukas",
+      "title": "Kafana na Balkanu",
+      "category": "folk",
+      "deezerId": 898922552
+    },
+    {
+      "id": "sasa-matic-nije-ovo-moja-noc",
+      "artist": "Saša Matić",
+      "title": "Nije ovo moja noć",
+      "category": "folk",
+      "deezerId": 81823144
+    },
+    {
+      "id": "sasa-matic-kralj-izgubljenih-stvari",
+      "artist": "Saša Matić",
+      "title": "Kralj izgubljenih stvari",
+      "category": "folk",
+      "deezerId": 458531552
+    },
+    {
+      "id": "sasa-matic-kad-ljubav-zakasni",
+      "artist": "Saša Matić",
+      "title": "Kad ljubav zakasni",
+      "category": "folk",
+      "deezerId": 1662817912
+    },
+    {
+      "id": "dzej-nedelja",
+      "artist": "Džej",
+      "title": "Nedelja",
+      "category": "folk",
+      "artistAliases": ["Dzej Ramadanovski", "Džej Ramadanovski"],
+      "deezerId": 75897511
+    },
+    {
+      "id": "dzej-sunce-ljubavi",
+      "artist": "Džej",
+      "title": "Sunce ljubavi",
+      "category": "folk",
+      "artistAliases": ["Dzej Ramadanovski", "Džej Ramadanovski"],
+      "deezerId": 3614019792
+    },
+    {
+      "id": "serif-konjevic-bijela-vjencanica",
+      "artist": "Šerif Konjević",
+      "title": "Bijela vjenčanica",
+      "category": "folk",
+      "audioUnavailable": true
+    },
+    {
+      "id": "hanka-paldum-crne-kose",
+      "artist": "Hanka Paldum",
+      "title": "Crne kose",
+      "category": "folk",
+      "deezerId": 551949022
+    },
+    {
+      "id": "semsa-suljakovic-pristajem-na-sve",
+      "artist": "Šemsa Suljaković",
+      "title": "Pristajem na sve",
+      "category": "folk",
+      "deezerId": 109772936
+    },
+    {
+      "id": "semsa-suljakovic-zar-za-mene-nema-srece",
+      "artist": "Šemsa Suljaković",
+      "title": "Zar za mene nema sreće",
+      "category": "folk",
+      "deezerId": 903833732
+    },
+    {
+      "id": "senidah-misici",
       "artist": "Senidah",
-      "title": "Vudu",
-      "category": "pop"
+      "title": "Mišići",
+      "category": "trap",
+      "deezerId": 3746732432
     },
     {
-      "artist": "Maya Berović",
-      "title": "Nisi bio tu",
-      "category": "pop"
-    },
-    {
-      "artist": "Jala Brat",
-      "title": "Magla",
-      "category": "trap"
-    },
-    {
-      "artist": "Buba Corelli",
-      "title": "Aman",
-      "category": "trap"
-    },
-    {
-      "artist": "Rasta",
-      "title": "Moja bol",
-      "category": "trap"
-    },
-    {
-      "artist": "Devito",
-      "title": "Dođi",
-      "category": "trap"
-    },
-    {
+      "id": "senidah-slaana",
       "artist": "Senidah",
-      "title": "Vudu",
-      "category": "pop"
+      "title": "Slađana",
+      "category": "trap",
+      "deezerId": 1448120402
     },
     {
-      "artist": "Maya Berović",
-      "title": "Nisi bio tu",
-      "category": "pop"
-    },
-    {
-      "artist": "Jala Brat",
-      "title": "Magla",
-      "category": "trap"
-    },
-    {
-      "artist": "Buba Corelli",
-      "title": "Aman",
-      "category": "trap"
-    },
-    {
-      "artist": "Rasta",
-      "title": "Moja bol",
-      "category": "trap"
-    },
-    {
-      "artist": "Devito",
-      "title": "Dođi",
-      "category": "trap"
-    },
-    {
+      "id": "senidah-behute",
       "artist": "Senidah",
-      "title": "Vudu",
-      "category": "pop"
+      "title": "Behute",
+      "category": "trap",
+      "deezerId": 1638064402
     },
     {
+      "id": "senidah-level",
+      "artist": "Senidah",
+      "title": "Level",
+      "category": "trap",
+      "deezerId": 2020660507
+    },
+    {
+      "id": "devito-uh",
+      "artist": "Devito",
+      "title": "Uh",
+      "category": "trap",
+      "deezerId": 698430472
+    },
+    {
+      "id": "devito-aligatori",
+      "artist": "Devito",
+      "title": "Aligatori",
+      "category": "trap",
+      "deezerId": 2738428671
+    },
+    {
+      "id": "devito-marina",
+      "artist": "Devito",
+      "title": "Marina",
+      "category": "trap",
+      "deezerId": 2726789111
+    },
+    {
+      "id": "devito-vudu",
+      "artist": "Devito",
+      "title": "Vudu",
+      "category": "trap",
+      "deezerId": 2727011391
+    },
+    {
+      "id": "rasta-kavasaki",
+      "artist": "Rasta",
+      "title": "Kavasaki",
+      "category": "trap",
+      "deezerId": 2874736532
+    },
+    {
+      "id": "rasta-adio-amore",
+      "artist": "Rasta",
+      "title": "Adio amore",
+      "category": "trap",
+      "deezerId": 2892773802
+    },
+    {
+      "id": "rasta-kavali",
+      "artist": "Rasta",
+      "title": "Kavali",
+      "category": "trap",
+      "deezerId": 2874735392
+    },
+    {
+      "id": "jala-brat-ona-e",
+      "artist": "Jala Brat",
+      "title": "Ona'e",
+      "category": "trap",
+      "deezerId": 2826274332
+    },
+    {
+      "id": "jala-brat-klinka",
+      "artist": "Jala Brat",
+      "title": "Klinka",
+      "category": "trap",
+      "deezerId": 2826436112
+    },
+    {
+      "id": "buba-corelli-balenciaga",
+      "artist": "Buba Corelli",
+      "title": "Balenciaga",
+      "category": "trap",
+      "deezerId": 2826423592
+    },
+    {
+      "id": "buba-corelli-gluh-i-nijem",
+      "artist": "Buba Corelli",
+      "title": "Gluh i nijem",
+      "category": "trap",
+      "deezerId": 2826036752
+    },
+    {
+      "id": "nucci-bebo",
+      "artist": "Nucci",
+      "title": "Bebo",
+      "category": "trap",
+      "deezerId": 3026519961
+    },
+    {
+      "id": "nucci-automatti",
+      "artist": "Nucci",
+      "title": "Automatti",
+      "category": "trap",
+      "deezerId": 3026525421
+    },
+    {
+      "id": "voyage-tango",
+      "artist": "Voyage",
+      "title": "Tango",
+      "category": "trap",
+      "deezerId": 1785220827
+    },
+    {
+      "id": "voyage-gad",
+      "artist": "Voyage",
+      "title": "Gad",
+      "category": "trap",
+      "deezerId": 1739971927
+    },
+    {
+      "id": "breskvica-srecan-put",
+      "artist": "Breskvica",
+      "title": "Srećan put",
+      "category": "trap",
+      "deezerId": 1426125692
+    },
+    {
+      "id": "relja-mi-amor",
+      "artist": "Relja",
+      "title": "Mi Amor",
+      "category": "trap",
+      "deezerId": 604206932
+    },
+    {
+      "id": "teodora-tresi-tresi",
+      "artist": "Teodora",
+      "title": "Tresi tresi",
+      "category": "trap",
+      "deezerId": 827288472
+    },
+    {
+      "id": "maya-berovic-neka-stvar",
       "artist": "Maya Berović",
-      "title": "Nisi bio tu",
-      "category": "pop"
+      "title": "Neka stvar",
+      "category": "trap",
+      "deezerId": 1524423282
     }
   ]
-} 
+}
